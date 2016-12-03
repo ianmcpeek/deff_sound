@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colors from http://www.colourlovers.com/palette/4321073/neil_is_young-->
+    <color name="Random">#DADAC9</color>
+    <color name="Blind">#3C2D39</color>
+    <color name="Prince">#6D374B</color>
+    <color name="PorkChop">#A85A42</color>
+    <color name="AfterDarkTG">#423009</color>
+
+    <!-- Colors from http://www.colourlovers.com/palette/1804326/sea_calling-->
+    <color name="Water">#086EB6</color>
+    <color name="Wave">#048FEA</color>
+    <color name="SkyHi">#63BEED</color>
+    <color name="D4EEFB">#D4EEFB</color>
+    <color name="BecauseYoureMine">#E9D3AA</color>
+</resources>
