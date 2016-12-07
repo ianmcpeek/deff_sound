@@ -13,8 +13,7 @@ import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import com.example.ian.deffsound.songview.Song;
 
 /**
  * Created by Ian on 8/28/2016.
@@ -170,5 +169,25 @@ public class MusicService extends Service implements
             return false;
         }
         return true;
+    }
+
+    public boolean shuffle() {
+        queue.toggleShuffle();
+        return queue.isShuffled();
+    }
+
+    public int repeat() {
+        queue.toggleRepeat();
+        if(queue.isRepeatQueue()) {
+            return 1; //queue
+        } else if(queue.isRepeatSong()) {
+            return 2; //song
+        } else {
+            return 0;//none
+        }
+    }
+
+    public Song getCurrentSong() {
+        return queue.getCurrentSong();
     }
 }

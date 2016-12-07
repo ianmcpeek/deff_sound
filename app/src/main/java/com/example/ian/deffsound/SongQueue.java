@@ -2,6 +2,8 @@ package com.example.ian.deffsound;
 
 import android.util.Log;
 
+import com.example.ian.deffsound.songview.Song;
+
 import java.util.ArrayList;
 
 /**
@@ -46,7 +48,10 @@ public class SongQueue {
             currentSong += 1;
         }
         //check if queue is shuffled
-        if(shuffleOn) return songList.get(shuffleMapping[currentSong]);
+        if(shuffleOn) {
+            Log.e("SHUFFLE", "Current Song: " + currentSong + "Next Shuffled Song: " + shuffleMapping[currentSong]);
+            return songList.get(shuffleMapping[currentSong]);
+        }
         return getCurrentSong();
     }
 
@@ -70,13 +75,14 @@ public class SongQueue {
 
     public Song getCurrentSong() {
         Log.e("CURSONG", "index now: " + currentSong);
+        if(shuffleOn) return songList.get(shuffleMapping[currentSong]);
         return songList.get(currentSong);
     }
 
     public void setCurrentSong(int i) {
         //if currentSong changed manually, shuffled order needs to be reset
         currentSong = i;
-        if(shuffleOn) shuffleQueue();
+       // if(shuffleOn) shuffleQueue();
     }
 
     public Song getSong(int i) {
@@ -91,19 +97,23 @@ public class SongQueue {
         return songList;
     }
 
-    public void shuffleQueue() {
-        shuffleMapping = new int[songList.size()];
+    private int[] shuffleQueue() {
+        int[] shuffled = new int[songList.size()];
         int index = 0;
-        for(int i = 0; i < shuffleMapping.length; i++) {
-            shuffleMapping[i] = i;
+        for(int i = 0; i < shuffled.length; i++) {
+            shuffled[i] = i;
         }
         //broken, allows shuffled songs to swap with themselves
-        for(int i = 0; i < shuffleMapping.length; i++) {
+        for(int i = 0; i < shuffled.length; i++) {
             int rand = (int) (Math.random() * (songList.size() - i) + i);
-            int swap = shuffleMapping[i];
-            shuffleMapping[i] = shuffleMapping[rand];
-            shuffleMapping[rand] = swap;
+            int swap = shuffled[i];
+            shuffled[i] = shuffled[rand];
+            shuffled[rand] = swap;
         }
+        String shuffledMapping = "";
+        for(int item:shuffled) shuffledMapping += item + ", ";
+        Log.e("SHUFFLE", shuffledMapping);
+        return shuffled;
     }
 
     public boolean isShuffled() {
@@ -121,9 +131,10 @@ public class SongQueue {
     public void toggleShuffle() {
         if(shuffleOn) {
             shuffleOn = false;
+            currentSong = shuffleMapping[currentSong];
         } else {
             shuffleOn = true;
-            shuffleQueue();
+            shuffleMapping = shuffleQueue();
         }
     }
 

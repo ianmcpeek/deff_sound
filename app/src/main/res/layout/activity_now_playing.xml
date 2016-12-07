@@ -48,13 +48,13 @@
 
     <!-- Album Art -->
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="300dp"
+        android:layout_height="600dp"
         android:id="@+id/albumArt"
         android:src="@drawable/no_album_art"
         android:layout_above="@+id/bottomBar"
-        android:layout_below="@+id/topBarLayout"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/topBarLayout" />
 
     <!-- BottomBar -->
     <LinearLayout
@@ -135,7 +135,8 @@
                 android:src="@drawable/shuffle_off"
                 android:layout_centerVertical="true"
                 android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true" />
+                android:layout_alignParentStart="true"
+                android:onClick="shuffleSongs"/>
 
             <ImageView
                 android:layout_width="71dp"
@@ -172,7 +173,8 @@
                 android:src="@drawable/repeat_off"
                 android:layout_centerVertical="true"
                 android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true" />
+                android:layout_alignParentEnd="true"
+                android:onClick="repeatSongs"/>
         </RelativeLayout>
     </LinearLayout>
 </RelativeLayout>
