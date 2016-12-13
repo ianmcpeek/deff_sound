@@ -1,17 +1,28 @@
 package com.example.ian.deffsound;
 
+import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.IBinder;
 import android.provider.MediaStore;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.ian.deffsound.songgroup.SongGroup;
@@ -24,11 +35,13 @@ import java.util.Collections;
 import java.util.Comparator;
 
 
-public class MainActivity extends ActionBarActivity implements NavigationWidget.OnFragmentInteractionListener{
+public class MainActivity extends ActionBarActivity implements NavigationWidget.OnFragmentInteractionListener,
+    NowPlayingWidget.OnFragmentInteractionListener{
 
 //    private MusicService musicService;
 //    private Intent playIntent;
-//    private boolean musicBound = false;
+    private boolean musicBound = false;
+    private MusicService musicService;
     private ArrayList<Song> songList;
     private ArrayList<SongGroup> songGroupList;
     private ListView songView;
@@ -46,7 +59,11 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
 
     @Override
     protected void onDestroy() {
-//        stopService(playIntent);
+        if(musicBound) {
+            Intent playIntent = new Intent(this, MusicService.class);
+            unbindService(musicConnection);
+            stopService(playIntent);
+        }
 //        musicService = null;
         super.onDestroy();
     }
@@ -54,10 +71,35 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
     @Override
     protected void onStart() {
         super.onStart();
-//        if(playIntent == null) {
-//            playIntent = new Intent(this, MusicService.class);
-//            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-//            startService(playIntent);
+        if(!musicBound) {
+            Intent playIntent = new Intent(this, MusicService.class);
+            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            //startService(playIntent);
+        } else if(musicService.isPlaying()) {
+            FrameLayout lay = (FrameLayout) findViewById(R.id.nowPlayingWidget);
+            lay.setVisibility(View.VISIBLE);
+
+            //modify size to allow fragment space
+            ListView lv = (ListView) findViewById(R.id.song_list);
+            ViewGroup.LayoutParams params = lv.getLayoutParams();
+            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 430, getResources().getDisplayMetrics());
+            lv.setLayoutParams(params);
+
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent completed = new Intent("SONG_PREPARED");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(completed);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+//        if(musicBound) {
+//            unbindService(musicConnection);
 //        }
     }
 
@@ -97,23 +139,22 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
         return super.onOptionsItemSelected(item);
     }
 
-//    private ServiceConnection musicConnection =
-//            new ServiceConnection() {
-//        @Override
-//        public void onServiceConnected(ComponentName name, IBinder service) {
-//            MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
-//            //get service
-//            musicService = binder.getService();
-//            //pass list
-//            musicService.setSongs(songList);
-//            musicBound = true;
-//        }
-//
-//        @Override
-//        public void onServiceDisconnected(ComponentName name) {
-//            musicBound = false;
-//        }
-//    };
+    private ServiceConnection musicConnection =
+            new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
+                    //get service
+                    musicService = binder.getService();
+                    //pass list
+                    musicBound = true;
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+                    musicBound = false;
+                }
+            };
 
     public ArrayList<Song> getSongList(String where, String[] whereParams, String orderBy) {
 
@@ -208,7 +249,12 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
         //bundle song picked into NowPlayingActivity
         intent.putExtra("songPicked", Integer.parseInt(view.getTag().toString()));
         intent.putParcelableArrayListExtra("songList", songList);
+        musicService.setQueue(new SongQueue(
+                Integer.parseInt(view.getTag().toString()), songList));
         MainActivity.this.startActivity(intent);
+//        if(musicBound) {
+//            unbindService(musicConnection);
+//        }
     }
 
     public void groupPicked(View view) {
@@ -243,6 +289,14 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
             setListToSong();
         } else if(data.compareTo("album") == 0) {
             setListToAlbum();
+        } else if(data.compareTo("expand") == 0) {
+            Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
+            //bundle song picked into NowPlayingActivity
+            MainActivity.this.startActivity(intent);
+        } else if(data.compareTo("play song") == 0) {
+            if(!musicService.isPlaying()) musicService.play();
+        } else if(data.compareTo("pause song") == 0) {
+            if(musicService.isPlaying()) musicService.pausePlayer();
         }
     }
 
@@ -262,4 +316,7 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
                  getAlbums("", null, MediaStore.Audio.Albums.ALBUM));
         songView.setAdapter(adt);
     }
+
+    public boolean isMusicBound() {return  musicBound;}
+    public MusicService getMusicService() {return musicService;}
 }

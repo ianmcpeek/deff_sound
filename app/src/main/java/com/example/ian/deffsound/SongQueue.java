@@ -105,14 +105,18 @@ public class SongQueue {
         }
         //broken, allows shuffled songs to swap with themselves
         for(int i = 0; i < shuffled.length; i++) {
+            if(i == currentSong) continue;
             int rand = (int) (Math.random() * (songList.size() - i) + i);
+            //temp fix to keep current song in shuffled playlist
+            while(rand == currentSong) {
+                rand = (int) (Math.random() * (songList.size() - i) + i);
+            }
             int swap = shuffled[i];
             shuffled[i] = shuffled[rand];
             shuffled[rand] = swap;
         }
-        String shuffledMapping = "";
-        for(int item:shuffled) shuffledMapping += item + ", ";
-        Log.e("SHUFFLE", shuffledMapping);
+
+
         return shuffled;
     }
 

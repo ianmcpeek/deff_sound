@@ -171,13 +171,14 @@ public class MusicService extends Service implements
         return true;
     }
 
+    public boolean isShuffled() {return queue.isShuffled();}
+
     public boolean shuffle() {
         queue.toggleShuffle();
         return queue.isShuffled();
     }
 
-    public int repeat() {
-        queue.toggleRepeat();
+    public int isRepeat() {
         if(queue.isRepeatQueue()) {
             return 1; //queue
         } else if(queue.isRepeatSong()) {
@@ -185,6 +186,11 @@ public class MusicService extends Service implements
         } else {
             return 0;//none
         }
+    }
+
+    public int repeat() {
+        queue.toggleRepeat();
+        return isRepeat();
     }
 
     public Song getCurrentSong() {

@@ -17,6 +17,7 @@ import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,8 +35,6 @@ import java.util.ArrayList;
 public class NowPlayingActivity extends AppCompatActivity {
     private MusicService musicService;
     private MusicServiceReciever reciever;
-    private Intent playIntent;
-    private SongQueue queue;
     private Handler songProgressHandler;
     private Runnable songProgressRunnable;
     private boolean musicBound = false;
@@ -48,10 +47,15 @@ public class NowPlayingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_now_playing);
         Intent intent = getIntent();
-        ArrayList<Song> songList = intent.getParcelableArrayListExtra("songList");
-        queue = new SongQueue(intent.getIntExtra("songPicked", 0),
-                songList);
         reciever = new MusicServiceReciever();
+
+        ImageView downBtn = (ImageView) findViewById(R.id.downBtn);
+        downBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         // ------- Grab Seekbar -------
         mSeekBar = (SeekBar) this.findViewById(R.id.seekBar);
@@ -98,9 +102,11 @@ public class NowPlayingActivity extends AppCompatActivity {
     }
 
     @Override
-         protected void onDestroy() {
-        stopService(playIntent);
-        musicService = null;
+    protected void onDestroy() {
+        //stopService(playIntent);
+        //musicService = null;
+        if(musicBound)
+            unbindService(musicConnection);
         super.onDestroy();
     }
 
@@ -111,10 +117,12 @@ public class NowPlayingActivity extends AppCompatActivity {
         IntentFilter filter =
                 new IntentFilter("SONG_PREPARED");
         LocalBroadcastManager.getInstance(this).registerReceiver(reciever, filter);
-        if(musicService!= null) {
+        if(musicBound) {
             // && musicService.isPlaying()
             Log.e("HANDLER", "trying to play song before set");
             songProgressHandler.postDelayed(songProgressRunnable, 0);
+            Intent completed = new Intent("SONG_PREPARED");
+            LocalBroadcastManager.getInstance(this).sendBroadcast(completed);
         }
     }
 
@@ -128,20 +136,17 @@ public class NowPlayingActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if(playIntent == null) {
-            playIntent = new Intent(this, MusicService.class);
+        if(!musicBound) {
+            Intent playIntent = new Intent(this, MusicService.class);
             bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(playIntent);
         }
+    }
 
-        //get int from queue
-        //if not set, needs to set a timer or async task to play song
-        if(musicService == null) Log.e("MUSIC SERVICE",
-                "music service not set");
-        //pass this tag into a new activity
-        //musicService.setSong(getIntent().getIntExtra("songPicked", 0));
-        //musicService.playSong();
-        setScreen();
+    @Override
+    protected void onStop() {
+        super.onStop();
+//        if(musicBound)
+//            unbindService(musicConnection);
     }
 
     @Override
@@ -174,8 +179,11 @@ public class NowPlayingActivity extends AppCompatActivity {
                     //get service
                     musicService = binder.getService();
                     //pass list
-                    musicService.setQueue(queue);
+                    //musicService.setQueue(queue);
                     musicBound = true;
+                    //setScreen();
+                    reciever.onReceive(null, null);
+                    setPlayerControls();
                 }
 
                 @Override
@@ -255,12 +263,49 @@ public class NowPlayingActivity extends AppCompatActivity {
 
     //VIEW UPDATES
     private void setScreen() {
-        TextView artistView = (TextView) findViewById(R.id.artistTxt);
-        TextView albumView = (TextView) findViewById(R.id.albumTxt);
-        TextView songView = (TextView) findViewById(R.id.songTxt);
-        artistView.setText(queue.getCurrentSong().getArtist());
-        albumView.setText(queue.getCurrentSong().getAlbum());
-        songView.setText(queue.getCurrentSong().getTitle());
+        if(musicBound) {
+            TextView artistView = (TextView) findViewById(R.id.artistTxt);
+            TextView albumView = (TextView) findViewById(R.id.albumTxt);
+            TextView songView = (TextView) findViewById(R.id.songTxt);
+            artistView.setText(musicService.getCurrentSong().getArtist());
+            albumView.setText(musicService.getCurrentSong().getAlbum());
+            songView.setText(musicService.getCurrentSong().getTitle());
+            songView.setSelected(true);
+            songView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+            songView.setSingleLine(true);
+        }
+    }
+
+    private void setPlayerControls() {
+        if(musicBound) {
+            ImageView playBtn = (ImageView) findViewById(R.id.playBtn);
+            ImageView shuffleBtn = (ImageView) findViewById(R.id.shuffleBtn);
+            ImageView repeatBtn = (ImageView) findViewById(R.id.repeatBtn);
+            if(musicService.isPlaying()) {
+                playBtn.setImageResource(R.drawable.pause);
+            } else {
+                playBtn.setImageResource(R.drawable.play);
+            }
+            if(musicService.isShuffled()) {
+                shuffleBtn.setImageResource(R.drawable.shuffle);
+            } else {
+                shuffleBtn.setImageResource(R.drawable.shuffle_off);
+            }
+//            return 1; //queue
+//            return 2; //song
+//            return 0;//none
+            switch(musicService.isRepeat()) {
+                case 1:
+                    repeatBtn.setImageResource(R.drawable.repeat_queue);
+                    break;
+                case 2:
+                    repeatBtn.setImageResource(R.drawable.repeat_song);
+                    break;
+                case 0:
+                    repeatBtn.setImageResource(R.drawable.repeat_off);
+                    break;
+            }
+        }
     }
 
     private void startTrackingSongProgress() {
@@ -319,6 +364,9 @@ public class NowPlayingActivity extends AppCompatActivity {
                 ImageView image=(ImageView)findViewById(R.id.albumArt);
                 //image.setScaleType(ImageView.ScaleType.FIT_XY);
                 image.setImageBitmap(bm);
+            } else {
+                ImageView image=(ImageView)findViewById(R.id.albumArt);
+                image.setImageResource(R.drawable.no_album_art);
             }
         }
     }

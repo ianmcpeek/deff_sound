@@ -100,13 +100,6 @@ public class NavigationWidget extends Fragment {
         return v;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction("button pressed");
-        }
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);

@@ -11,6 +11,11 @@ tools:context=".MainActivity">
         android:layout_height="480dp"
         android:layout_width="fill_parent">
     </ListView>
+    <fragment android:name="com.example.ian.deffsound.NowPlayingWidget"
+        android:id="@+id/nowPlayingWidget"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
     <fragment android:name="com.example.ian.deffsound.NavigationWidget"
         android:id="@+id/navigationFragment"
         android:layout_weight="1"
