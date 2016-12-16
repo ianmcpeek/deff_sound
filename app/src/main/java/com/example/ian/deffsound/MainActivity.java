@@ -157,6 +157,48 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
                 }
             };
 
+    public ArrayList<SongGroup> querySongStorage(CategoryFilter.CategoryData catData,
+                                                 String selection, String[] selectionArgs,
+                                                 String orderBy) {
+
+        ContentResolver musicResolver = getContentResolver();
+        //Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        //String selection = MediaStore.Audio.Media.IS_MUSIC + "!=0" + where;
+        Cursor musicCursor = musicResolver.query(catData.getUri(), null, selection, selectionArgs, orderBy);
+        ArrayList<SongGroup> songList = new ArrayList<SongGroup>();
+
+        if (musicCursor != null && musicCursor.moveToFirst()) {
+            //get columns
+            String[] columns = new String[catData.getColumns().length];
+            int columnlen = 0;
+            for(String column:catData.getColumns()) {
+                int catColumn = musicCursor.getColumnIndex(column);
+                columns[columnlen] = musicCursor.getString(catColumn);
+                columnlen++;
+            }
+            int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media._ID);
+            int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int artistColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int albumColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM);
+            int trackColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TRACK);
+            // int albumArtColumn  = musicCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART);
+            //int albumArtistColumn = musicCursor.getColumnIndex(MediaStore.Audio.Albums.ARTIST);
+            //add songs to list
+            do {
+                long thisId = musicCursor.getLong(idColumn);
+                String thisTitle = musicCursor.getString(titleColumn);
+                String thisArtist = musicCursor.getString(artistColumn);
+                String thisAlbum = musicCursor.getString(albumColumn);
+                String thisTrack = musicCursor.getString(trackColumn);
+                String thisAlbumArt = null;
+                String thisAlbumArtist = null;
+                songList.add(new Song(thisId, thisTitle, thisArtist, thisAlbum,
+                        Integer.valueOf(thisTrack), thisAlbumArt, thisAlbumArtist));
+            } while (musicCursor.moveToNext());
+        }
+        return songList;
+    }
+
     public ArrayList<Song> getSongList(String where, String[] whereParams, String orderBy) {
 
         ContentResolver musicResolver = getContentResolver();
@@ -295,9 +337,9 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
             //bundle song picked into NowPlayingActivity
             MainActivity.this.startActivity(intent);
         } else if(data.compareTo("play song") == 0) {
-            if(!musicService.isPlaying()) musicService.play();
+            if(musicBound && !musicService.isPlaying()) musicService.play();
         } else if(data.compareTo("pause song") == 0) {
-            if(musicService.isPlaying()) musicService.pausePlayer();
+            if(musicBound && musicService.isPlaying()) musicService.pausePlayer();
         }
     }
 
