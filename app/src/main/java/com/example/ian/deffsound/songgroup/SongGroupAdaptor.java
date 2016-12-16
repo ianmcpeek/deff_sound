@@ -51,8 +51,8 @@ public class SongGroupAdaptor extends BaseAdapter {
             //get title and artist Strings
             groupView.setText(currGroup.getTitle());
             int trackCount = currGroup.getTotalTracks();
-            trackView.setText( trackCount +
-                    (trackCount > 1 ? " songs":" song"));
+            String groupType = currGroup.getType() == SongGroup.GroupType.ARTIST ? " albums" : " songs";
+            trackView.setText( trackCount + groupType);
             //set position as tag
             songLay.setTag(position);
             return songLay;

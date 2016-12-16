@@ -138,7 +138,7 @@ public class NowPlayingActivity extends AppCompatActivity {
         super.onStart();
         if(!musicBound) {
             Intent playIntent = new Intent(this, MusicService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            bindService(playIntent, musicConnection, 0);
         }
     }
 

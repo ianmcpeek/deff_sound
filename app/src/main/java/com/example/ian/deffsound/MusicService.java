@@ -33,6 +33,7 @@ public class MusicService extends Service implements
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.e("SERVICE", "Music Service has been created");
         player = new MediaPlayer();
         initPlayer();
 
@@ -55,14 +56,19 @@ public class MusicService extends Service implements
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
         return bind;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
-        player.stop();
-        player.release();
+        //player.stop();
+        //player.release();
         return false; //may need refactoring for errors
     }
 

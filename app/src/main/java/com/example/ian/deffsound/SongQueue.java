@@ -100,21 +100,21 @@ public class SongQueue {
     private int[] shuffleQueue() {
         int[] shuffled = new int[songList.size()];
         int index = 0;
+        int shuffledIndex = 0;
         for(int i = 0; i < shuffled.length; i++) {
             shuffled[i] = i;
         }
-        //broken, allows shuffled songs to swap with themselves
         for(int i = 0; i < shuffled.length; i++) {
-            if(i == currentSong) continue;
             int rand = (int) (Math.random() * (songList.size() - i) + i);
             //temp fix to keep current song in shuffled playlist
-            while(rand == currentSong) {
-                rand = (int) (Math.random() * (songList.size() - i) + i);
-            }
+            if(i == currentSong) shuffledIndex = rand;
             int swap = shuffled[i];
             shuffled[i] = shuffled[rand];
             shuffled[rand] = swap;
         }
+        //replace currentSong in queue position
+        shuffled[shuffledIndex] = shuffled[currentSong];
+        shuffled[currentSong] = currentSong;
 
 
         return shuffled;

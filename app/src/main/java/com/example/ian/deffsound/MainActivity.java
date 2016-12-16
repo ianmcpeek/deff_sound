@@ -62,7 +62,7 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
         if(musicBound) {
             Intent playIntent = new Intent(this, MusicService.class);
             unbindService(musicConnection);
-            stopService(playIntent);
+            //stopService(playIntent);
         }
 //        musicService = null;
         super.onDestroy();
@@ -73,7 +73,8 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
         super.onStart();
         if(!musicBound) {
             Intent playIntent = new Intent(this, MusicService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            bindService(playIntent, musicConnection, 0);
+            startService(playIntent);
             //startService(playIntent);
         } else if(musicService.isPlaying()) {
             FrameLayout lay = (FrameLayout) findViewById(R.id.nowPlayingWidget);
@@ -202,16 +203,16 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
             //get columns
             int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Artists._ID);
             int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Artists.ARTIST);
-            int trackColumn = musicCursor.getColumnIndex(MediaStore.Audio.Artists.NUMBER_OF_TRACKS);
+            int albumColumn = musicCursor.getColumnIndex(MediaStore.Audio.Artists.NUMBER_OF_ALBUMS);
             do {
                 long thisId = musicCursor.getLong(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
-                String thisTrack = musicCursor.getString(trackColumn);
+                String thisAlbums = musicCursor.getString(albumColumn);
                 if(artistList.size() > 0 &&
                         thisTitle.contains(artistList.get(
                                 artistList.size() - 1).getTitle())) continue;
                 artistList.add(new SongGroup(thisId, thisTitle, null,
-                        Integer.valueOf(thisTrack), SongGroup.GroupType.ARTIST));
+                        Integer.valueOf(thisAlbums), SongGroup.GroupType.ARTIST));
             } while (musicCursor.moveToNext());
         }
         songGroupList = artistList;
