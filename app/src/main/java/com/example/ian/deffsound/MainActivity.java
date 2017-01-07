@@ -21,7 +21,7 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 
 import com.example.ian.deffsound.songgroup.SongGroup;
-import com.example.ian.deffsound.songgroup.MusicItemListAdaptor;
+import com.example.ian.deffsound.musiclist.MusicItemListAdaptor;
 import com.example.ian.deffsound.songview.Song;
 import com.example.ian.deffsound.songview.SongAdaptor;
 
