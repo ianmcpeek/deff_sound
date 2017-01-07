@@ -2,7 +2,6 @@ package com.example.ian.deffsound;
 
 import android.content.ComponentName;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -18,21 +17,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.ian.deffsound.songgroup.SongGroup;
-import com.example.ian.deffsound.songgroup.SongGroupAdaptor;
+import com.example.ian.deffsound.songgroup.MusicItemListAdaptor;
 import com.example.ian.deffsound.songview.Song;
 import com.example.ian.deffsound.songview.SongAdaptor;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Stack;
 
 
 public class MainActivity extends ActionBarActivity implements NavigationWidget.OnFragmentInteractionListener,
@@ -42,15 +36,17 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
 //    private Intent playIntent;
     private boolean musicBound = false;
     private MusicService musicService;
-    private ArrayList<Song> songList;
+    private ArrayList<Song> playlist;
     private ArrayList<SongGroup> songGroupList;
     private ListView songView;
+    //used to track user breadcrumbs
+    private Stack<String> history;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        songList = new ArrayList<Song>();
+        playlist = new ArrayList<Song>();
         songGroupList = new ArrayList<SongGroup>();
         songView = (ListView)findViewById(R.id.song_list);
         //retrieve data
@@ -291,9 +287,9 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
         Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
         //bundle song picked into NowPlayingActivity
         intent.putExtra("songPicked", Integer.parseInt(view.getTag().toString()));
-        intent.putParcelableArrayListExtra("songList", songList);
+        intent.putParcelableArrayListExtra("playlist", playlist);
         musicService.setQueue(new SongQueue(
-                Integer.parseInt(view.getTag().toString()), songList));
+                Integer.parseInt(view.getTag().toString()), playlist));
         MainActivity.this.startActivity(intent);
 //        if(musicBound) {
 //            unbindService(musicConnection);
@@ -309,14 +305,14 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
                 songGroupList = getAlbums(MediaStore.Audio.Albums.ARTIST + " LIKE ?",
                         new String[]{group.getTitle()},
                         MediaStore.Audio.Albums.FIRST_YEAR  + " DESC, " + MediaStore.Audio.Media.ALBUM);
-                SongGroupAdaptor adt = new SongGroupAdaptor(this, songGroupList);
+                MusicItemListAdaptor adt = new MusicItemListAdaptor(this, songGroupList);
                 songView.setAdapter(adt);
                 break;
             case ALBUM:
-                songList = getSongList(" AND " + MediaStore.Audio.Media.ALBUM + "=?",
+                playlist = getSongList(" AND " + MediaStore.Audio.Media.ALBUM + "=?",
                         new String[]{group.getTitle()},
                         MediaStore.Audio.Media.TRACK);
-                SongAdaptor songadt = new SongAdaptor(this, songList);
+                SongAdaptor songadt = new SongAdaptor(this, playlist);
                 songView.setAdapter(songadt);
                 break;
         }
@@ -344,18 +340,18 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
     }
 
     public void setListToArtist() {
-        SongGroupAdaptor adt = new SongGroupAdaptor(this, getArtists());
+        MusicItemListAdaptor adt = new MusicItemListAdaptor(this, getArtists());
         songView.setAdapter(adt);
     }
 
     public void setListToSong() {
-        songList = getSongList("", null, MediaStore.Audio.Media.TITLE);
-        SongAdaptor songAdt = new SongAdaptor(this, songList);
+        playlist = getSongList("", null, MediaStore.Audio.Media.TITLE);
+        SongAdaptor songAdt = new SongAdaptor(this, playlist);
         songView.setAdapter(songAdt);
     }
 
     public void setListToAlbum() {
-        SongGroupAdaptor adt = new SongGroupAdaptor(this,
+        MusicItemListAdaptor adt = new MusicItemListAdaptor(this,
                  getAlbums("", null, MediaStore.Audio.Albums.ALBUM));
         songView.setAdapter(adt);
     }
