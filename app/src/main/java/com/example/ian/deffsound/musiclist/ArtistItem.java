@@ -1,6 +1,6 @@
 package com.example.ian.deffsound.musiclist;
 
-import com.example.ian.deffsound.MusicCategory;
+import com.example.ian.deffsound.MusicDirectoryType;
 
 /**
  * Created by Ian on 1/6/2017.
@@ -29,7 +29,7 @@ public class ArtistItem implements MusicItem {
     }
 
     @Override
-    public MusicCategory getCategory() { return MusicCategory.ARTIST; }
+    public MusicDirectoryType getCategory() { return MusicDirectoryType.ARTIST; }
 
     public int getAlbumCount() {
         return albumCount;

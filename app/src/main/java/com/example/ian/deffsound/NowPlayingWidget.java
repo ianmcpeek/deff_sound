@@ -169,9 +169,11 @@ public class NowPlayingWidget extends Fragment {
                     MusicService srv = act.getMusicService();
                     TextView song = (TextView) act.findViewById(R.id.fragSongTxt);
                     TextView artist = (TextView) act.findViewById(R.id.fragArtistTxt);
-                    song.setText(srv.getCurrentSong().getTitle());
-                    artist.setText(srv.getCurrentSong().getArtist() + " - " +
-                            srv.getCurrentSong().getAlbum());
+                    if(srv.isQueueSet()) {
+                        song.setText(srv.getCurrentSong().getTitle());
+                        artist.setText(srv.getCurrentSong().getArtist() + " - " +
+                                srv.getCurrentSong().getAlbum());
+                    }
                     ImageView playBtn = (ImageView) act.findViewById(R.id.fragmentPlayBtn);
                     if(srv.isPlaying()) {
                         playBtn.setImageResource(R.drawable.pause);

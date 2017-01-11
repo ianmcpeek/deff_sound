@@ -15,6 +15,8 @@ import android.util.Log;
 
 import com.example.ian.deffsound.songview.Song;
 
+import java.io.IOException;
+
 /**
  * Created by Ian on 8/28/2016.
  */
@@ -29,6 +31,8 @@ public class MusicService extends Service implements
     //current position
     //bind to main activity
     private final IBinder bind = new MusicBinder();
+
+    private boolean autoplay = true;
 
     @Override
     public void onCreate() {
@@ -77,6 +81,12 @@ public class MusicService extends Service implements
         //mp.stop();
         if(queue.nextSong() != null) {
             playSong();
+        } else {
+            queue.resetQueue();
+            mp.reset();
+            autoplay = false;
+            prepareSong();
+            mp.prepareAsync();
         }
     }
 
@@ -91,7 +101,7 @@ public class MusicService extends Service implements
         Intent completed = new Intent("SONG_PREPARED");
         LocalBroadcastManager.getInstance(this).sendBroadcast(completed);
         //start playback
-        mp.start();
+        if(autoplay) mp.start();
     }
 
     public void setQueue(SongQueue songQueue) {
@@ -122,6 +132,7 @@ public class MusicService extends Service implements
     private void playSong() {
         player.reset();
         prepareSong();
+        autoplay = true;
         player.prepareAsync();
     }
 
@@ -157,9 +168,12 @@ public class MusicService extends Service implements
     public boolean next() {
         if(queue.nextSong()!=null)
             playSong();
-        else if(player.isPlaying()) {
-            //play song
-            player.stop();
+        else {
+            queue.resetQueue();
+            player.reset();
+            autoplay = false;
+            prepareSong();
+            player.prepareAsync();
             return false;
         }
         return true;
@@ -170,8 +184,14 @@ public class MusicService extends Service implements
         else if(queue.prevSong()!=null)
             playSong();
         else if(player.isPlaying()) {
-            //play song
-            player.stop();
+            playSong();
+            return false;
+        } else {
+            autoplay = false;
+            queue.resetQueue();
+            player.reset();
+            prepareSong();
+            player.prepareAsync();
             return false;
         }
         return true;
@@ -201,5 +221,9 @@ public class MusicService extends Service implements
 
     public Song getCurrentSong() {
         return queue.getCurrentSong();
+    }
+
+    public boolean isQueueSet() {
+        return queue != null;
     }
 }

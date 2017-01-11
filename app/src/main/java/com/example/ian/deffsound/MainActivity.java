@@ -6,11 +6,12 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -21,16 +22,14 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 
 import com.example.ian.deffsound.musiclist.AlbumItem;
-import com.example.ian.deffsound.musiclist.ArtistItem;
 import com.example.ian.deffsound.musiclist.MusicItem;
-import com.example.ian.deffsound.musiclist.SongItem;
 import com.example.ian.deffsound.musiclist.MusicItemListAdaptor;
+import com.example.ian.deffsound.musiclist.SongItem;
 import com.example.ian.deffsound.songview.Song;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
-import java.util.StringTokenizer;
 
 
 public class MainActivity extends ActionBarActivity implements NavigationWidget.OnFragmentInteractionListener,
@@ -44,72 +43,110 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
     private ArrayList<MusicItem> musicItemList;
     private ListView musicListView;
     //used to track user breadcrumbs
-    private Stack<HistorySnapShot> history;
-    private HistorySnapShot currentSnapShot =
-            new HistorySnapShot(MusicCategory.SONG, "", null, MediaStore.Audio.Media.TITLE);
+
+    private MusicDirectoryQueryHistory queryHistory;
+
+
+    //private Stack<MusicDirectoryQuery> history;
+    //private MusicDirectoryQuery currentSnapShot =
+     //       new MusicDirectoryQuery(MusicDirectoryType.SONG, "", null, MediaStore.Audio.Media.TITLE);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        playlist = new ArrayList<Song>();
+        playlist = null;
         musicItemList = new ArrayList<MusicItem>();
         musicListView = (ListView)findViewById(R.id.song_list);
         //retrieve data
 
         //initialize stack and set to default list when history is empty
-        history = new Stack<>();
-        swapMusicItemList(getSongList("", null, MediaStore.Audio.Media.TITLE));
+        MusicDirectoryQuery defaultQuery = new MusicDirectoryQuery(MusicDirectoryType.SONG, null);
+        queryHistory = new MusicDirectoryQueryHistory(defaultQuery);
+
+        //set & display default directory
+        musicItemList = retrieveDirectoryFromStorage(defaultQuery);
+        displayDirectory();
         //eventually stack should read from a temp file first before setting screen
+
+
+        //really weird bug where a delay needs to be set to display widget,
+        //but the delay is extremely small and unnoticable
+
+        // -------- Handler for displaying now playing widget -------
+        final Handler h = new Handler();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                Intent completed = new Intent("SONG_PREPARED");
+                LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(completed);
+                if(musicBound && musicService.isQueueSet())
+                    displayNowPlayingFragment();
+            }
+        };
+        h.postDelayed(r, 10);
     }
 
     @Override
     public void onBackPressed() {
-        if(history.isEmpty()) {
+        if(queryHistory.isEmpty()) {
             super.onBackPressed();
-        } else popMusicItemListFromHistory();
+        } else stepOutOfDirectory();
     }
 
-    private void pushMusicItemListToHistory(HistorySnapShot snapshot) {
-        //check if snapshot identical to previous entry
-        if(currentSnapShot.equals(snapshot)) return;
-        history.push(currentSnapShot);
-        currentSnapShot = snapshot;
-        displayListTitle(snapshot);
+    private void displayCurrentDirectoryTitle() {
+        MusicDirectoryQuery query = queryHistory.getCurrentDirectoryQuery();
+        if(query == null) return;
+        if(query.hasQueryTitle()) {
+            getSupportActionBar().setTitle(query.getTitle());
+        } else {
+            getSupportActionBar().setTitle(MusicDirectoryType.toString(query.getMusicDirectoryType()));
+        }
     }
 
-    private void popMusicItemListFromHistory() {
-        if(history.isEmpty()) return;
-        HistorySnapShot snapshot = history.pop();
-        querySongs(snapshot);
-        currentSnapShot = snapshot;
-        displayListTitle(snapshot);
+    public void displayDirectory() {
+        //set list view
+        MusicItemListAdaptor adt = new MusicItemListAdaptor(this, musicItemList);
+        musicListView.setAdapter(adt);
+        displayCurrentDirectoryTitle();
     }
 
-    private void displayListTitle(HistorySnapShot snapshot) {
-        String title = Arrays.toString(snapshot.getSelectionArgs());
-        if(snapshot.getSelectionArgs()!= null) {
-            title = title.substring(1, title.length() - 1);
-            getSupportActionBar().setTitle(title);
-        } else
-            getSupportActionBar().setTitle(snapshot.getSnapshotTitle());
-    }
-
-    private void querySongs (HistorySnapShot snapshot) {
-        switch (snapshot.getCategory()) {
+    private ArrayList<MusicItem> retrieveDirectoryFromStorage(MusicDirectoryQuery query) {
+        if(query == null) return null;
+        ArrayList<MusicItem> directory = null;
+        switch(query.getMusicDirectoryType()) {
             case ARTIST:
-                swapMusicItemList(getArtists(snapshot.getSelection(),
-                        snapshot.getSelectionArgs(), snapshot.getOrderBy()));
+                directory = LocalSongStorage.retrieveAllArtistsDirectory(MainActivity.this);
                 break;
             case ALBUM:
-                swapMusicItemList(getAlbums(snapshot.getSelection(),
-                        snapshot.getSelectionArgs(), snapshot.getOrderBy()));
+                if(query.hasQueryTitle())
+                    directory = LocalSongStorage.retrieveAllAlbumsFromArtistDirectory(MainActivity.this, query.getTitle());
+                else
+                    directory = LocalSongStorage.retrieveAllAlbumsDirectory(MainActivity.this);
                 break;
             case SONG:
-                swapMusicItemList(getSongList(snapshot.getSelection(),
-                        snapshot.getSelectionArgs(), snapshot.getOrderBy()));
+                if(query.hasQueryTitle()) {
+                    directory = LocalSongStorage.retrieveSongsInAlbumDirectory(MainActivity.this, query.getTitle());
+                    playlist = LocalSongStorage.retrieveAlbumPlaylist(MainActivity.this, query.getTitle());
+                } else {
+                    directory = LocalSongStorage.retrieveAllSongsDirectory(MainActivity.this);
+                    playlist = LocalSongStorage.retrieveAllSongsPlaylist(MainActivity.this);
+                }
                 break;
         }
+        return directory;
+    }
+
+    private void stepIntoDirectory(MusicDirectoryQuery query) {
+        musicItemList = retrieveDirectoryFromStorage(query);
+        queryHistory.addToHistory(query);
+        displayDirectory();
+    }
+
+    private void stepOutOfDirectory() {
+        MusicDirectoryQuery query = queryHistory.removeFromHistory();
+        musicItemList = retrieveDirectoryFromStorage(query);
+        displayDirectory();
     }
 
     @Override
@@ -131,17 +168,19 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
             bindService(playIntent, musicConnection, 0);
             startService(playIntent);
             //startService(playIntent);
-        } else if(musicService.isPlaying()) {
-            FrameLayout lay = (FrameLayout) findViewById(R.id.nowPlayingWidget);
-            lay.setVisibility(View.VISIBLE);
-
-            //modify size to allow fragment space
-            ListView lv = (ListView) findViewById(R.id.song_list);
-            ViewGroup.LayoutParams params = lv.getLayoutParams();
-            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 430, getResources().getDisplayMetrics());
-            lv.setLayoutParams(params);
-
         }
+            //displayNowPlayingFragment if musicbound
+    }
+
+    private void displayNowPlayingFragment() {
+        FrameLayout lay = (FrameLayout) findViewById(R.id.nowPlayingWidget);
+        lay.setVisibility(View.VISIBLE);
+
+        //modify size to allow fragment space
+        ListView lv = (ListView) findViewById(R.id.song_list);
+        ViewGroup.LayoutParams params = lv.getLayoutParams();
+        params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 430, getResources().getDisplayMetrics());
+        lv.setLayoutParams(params);
     }
 
     @Override
@@ -150,15 +189,8 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
         Intent completed = new Intent("SONG_PREPARED");
         LocalBroadcastManager.getInstance(this).sendBroadcast(completed);
 
-//        //check if history needs to be updated
-//        if(!history.isEmpty() && !currentSnapShot.equals(history.peek())) {
-//            popMusicItemListFromHistory();
-//            querySongs(currentSnapShot);
-//        }
-//        if(currentSnapShot.getSelectionArgs()!= null)
-//            getSupportActionBar().setTitle(Arrays.toString(currentSnapShot.getSelectionArgs()));
-//        else
-//            getSupportActionBar().setTitle(currentSnapShot.getSnapshotTitle());
+        if(musicBound && musicService.isQueueSet())
+            displayNowPlayingFragment();
     }
 
     @Override
@@ -222,93 +254,6 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
                 }
             };
 
-    public ArrayList<MusicItem> getSongList(String where, String[] whereParams, String orderBy) {
-        //when displaying a list of songs, also save a playlist
-        ArrayList<MusicItem> songList = new ArrayList<MusicItem>();
-        playlist = new ArrayList<Song>();
-
-        ContentResolver musicResolver = getContentResolver();
-        Uri musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String selection = MediaStore.Audio.Media.IS_MUSIC + "!=0" + where;
-        String[] selectionArgs = whereParams;
-        Cursor musicCursor = musicResolver.query(musicUri, null, selection, selectionArgs, orderBy);
-
-        if (musicCursor != null && musicCursor.moveToFirst()) {
-            //get columns
-            int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media._ID);
-            int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int artistColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-            int albumColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM);
-            int trackColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.TRACK);
-            int trackLengthColumn = musicCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
-
-            do {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisArtist = musicCursor.getString(artistColumn);
-                String thisAlbum = musicCursor.getString(albumColumn);
-                int thisTrack = musicCursor.getInt(trackColumn);
-                int thisTrackLength = musicCursor.getInt(trackLengthColumn);
-
-                songList.add(new SongItem(thisTitle, thisArtist, thisAlbum, thisTrackLength));
-                playlist.add(new Song(thisId, thisTitle, thisArtist, thisAlbum, thisTrack));
-            } while (musicCursor.moveToNext());
-        }
-        return songList;
-    }
-
-    public ArrayList<MusicItem> getArtists(String selection, String[] selectionArgs, String orderBy) {
-        ArrayList<MusicItem> artistList = new ArrayList<MusicItem>();
-        ContentResolver musicResolver = getContentResolver();
-        Uri musicUri = MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI;
-        //TODO decide whether orderBy is ever needed for artists
-        orderBy = MediaStore.Audio.Artists.ARTIST;
-        Cursor musicCursor = musicResolver.query(musicUri, null, selection, selectionArgs, orderBy);
-
-        if (musicCursor != null && musicCursor.moveToFirst()) {
-            //get columns
-            int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Artists._ID);
-            int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Artists.ARTIST);
-            int albumColumn = musicCursor.getColumnIndex(MediaStore.Audio.Artists.NUMBER_OF_ALBUMS);
-            do {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisAlbums = musicCursor.getString(albumColumn);
-                if(artistList.size() > 0 &&
-                        thisTitle.contains(artistList.get(
-                                artistList.size() - 1).getTitle())) continue;
-                artistList.add( new ArtistItem(thisTitle, Integer.valueOf(thisAlbums)) );
-            } while (musicCursor.moveToNext());
-        }
-        //musicItemList = artistList;
-        return artistList;
-    }
-
-    public ArrayList<MusicItem> getAlbums(String where, String[] whereParams, String orderBy) {
-        ArrayList<MusicItem> albumList = new ArrayList<MusicItem>();
-        ContentResolver musicResolver = getContentResolver();
-        Uri musicUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-        String[] selectionArgs = whereParams;
-        Cursor musicCursor = musicResolver.query(musicUri, null, where, selectionArgs, orderBy);
-
-        if (musicCursor != null && musicCursor.moveToFirst()) {
-            //get columns
-            int idColumn = musicCursor.getColumnIndex(MediaStore.Audio.Albums._ID);
-            int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM);
-            int trackColumn = musicCursor.getColumnIndex(MediaStore.Audio.Albums.NUMBER_OF_SONGS);
-            int yearColumn = musicCursor.getColumnIndex(MediaStore.Audio.Albums.FIRST_YEAR);
-            do {
-                long thisId = musicCursor.getLong(idColumn);
-                String thisTitle = musicCursor.getString(titleColumn);
-                String thisTrack = musicCursor.getString(trackColumn);
-                String thisYear = musicCursor.getString(yearColumn);
-                albumList.add(new AlbumItem(thisTitle, Integer.valueOf(thisTrack), thisYear));
-            } while (musicCursor.moveToNext());
-        }
-        //musicItemList = albumList;
-        return albumList;
-    }
-
     public void musicItemPicked(View view) {
         if(musicItemList == null) return;
         int pos = Integer.valueOf(view.getTag().toString());
@@ -316,26 +261,11 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
         //check if song and playlist set
         if(item.isSong()) {
             if (playlist != null) startNowPlaying(pos);
-        } else if(item.getCategory() == MusicCategory.ARTIST) {
-            performMusicListSwap(MusicCategory.ALBUM, MediaStore.Audio.Albums.ARTIST + " LIKE ?",
-                    new String[]{item.getTitle()},
-                    MediaStore.Audio.Albums.FIRST_YEAR  + " DESC, " + MediaStore.Audio.Media.ALBUM);
-        } else if(item.getCategory() == MusicCategory.ALBUM) {
-            performMusicListSwap(MusicCategory.SONG, " AND " + MediaStore.Audio.Media.ALBUM + "=?",
-                    new String[]{item.getTitle()}, MediaStore.Audio.Media.TRACK);
+        } else if(item.getCategory() == MusicDirectoryType.ARTIST) {
+            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.ALBUM, item.getTitle()));
+        } else if(item.getCategory() == MusicDirectoryType.ALBUM) {
+            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.SONG, item.getTitle()));
         }
-    }
-
-    private void performMusicListSwap(MusicCategory cat, String select, String[] selectArgs, String order) {
-        HistorySnapShot snap = new HistorySnapShot(cat, select, selectArgs, order);
-        pushMusicItemListToHistory(snap);
-        querySongs(snap);
-    }
-
-    private void swapMusicItemList(ArrayList<MusicItem> newMusicItemList) {
-        musicItemList = newMusicItemList;
-        MusicItemListAdaptor adt = new MusicItemListAdaptor(this, musicItemList);
-        musicListView.setAdapter(adt);
     }
 
     private void startNowPlaying(int songIndex) {
@@ -354,11 +284,11 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
     public void onFragmentInteraction(String data) {
         Log.e("FRAGMENT", "FRAGMENT INTERACTION: " + data);
         if(data.compareTo("artist") == 0) {
-            performMusicListSwap(MusicCategory.ARTIST, "", null, MediaStore.Audio.Media.ARTIST);
+            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.ARTIST, null));
         } else if(data.compareTo("album") == 0) {
-            performMusicListSwap(MusicCategory.ALBUM, "", null, MediaStore.Audio.Media.ALBUM);
+            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.ALBUM, null));
         } else if(data.compareTo("song") == 0) {
-            performMusicListSwap(MusicCategory.SONG, "", null, MediaStore.Audio.Media.TITLE);
+            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.SONG, null));
         } else if(data.compareTo("expand") == 0) {
             Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
             //bundle song picked into NowPlayingActivity

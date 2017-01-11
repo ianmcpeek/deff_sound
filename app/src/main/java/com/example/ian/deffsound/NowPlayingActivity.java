@@ -3,6 +3,7 @@ package com.example.ian.deffsound;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -10,6 +11,7 @@ import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
@@ -29,6 +31,7 @@ import android.widget.Toast;
 
 import com.example.ian.deffsound.songview.Song;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -348,24 +351,25 @@ public class NowPlayingActivity extends AppCompatActivity {
             //ImageView albumArt = (ImageView)findViewById(R.id.albumArt);
             //albumArt.setImageBitmap(bm);
             ContentResolver musicResolve = getContentResolver();
-            Uri albumUri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-            Cursor music =musicResolve.query(albumUri, null, MediaStore.Audio.Albums.ALBUM + " LIKE ?",
-                    new String[]{musicService.getCurrentSong().getAlbum()}, null);
+            Uri albumUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            Cursor music =musicResolve.query(albumUri, null, MediaStore.Audio.Media.TITLE + " LIKE ?",
+                    new String[]{musicService.getCurrentSong().getTitle()}, null);
 
 
 
-            music.moveToFirst();            //i put only one song in my external storage to keep things simple
-            int x=music.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART);
-            String thisArt = music.getString(x);
-            //Toast.makeText(getApplicationContext(), "Song picked: " + thisArt, Toast.LENGTH_SHORT).show();
+            music.moveToFirst();
+            int x=music.getColumnIndex(MediaStore.Audio.Media.DATA);
+            String songPath = music.getString(x);
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(songPath);
 
-            if(thisArt!= null) {
-                Bitmap bm= BitmapFactory.decodeFile(thisArt);
-                ImageView image=(ImageView)findViewById(R.id.albumArt);
-                //image.setScaleType(ImageView.ScaleType.FIT_XY);
-                image.setImageBitmap(bm);
-            } else {
-                ImageView image=(ImageView)findViewById(R.id.albumArt);
+
+            ImageView image=(ImageView)findViewById(R.id.albumArt);
+            try {
+                byte[] albumArtData = retriever.getEmbeddedPicture();
+                Bitmap albumArt = BitmapFactory.decodeByteArray(albumArtData, 0, albumArtData.length);
+                image.setImageBitmap(albumArt);
+            } catch (Exception e) {
                 image.setImageResource(R.drawable.no_album_art);
             }
         }

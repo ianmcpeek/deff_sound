@@ -1,6 +1,6 @@
 package com.example.ian.deffsound.musiclist;
 
-import com.example.ian.deffsound.MusicCategory;
+import com.example.ian.deffsound.MusicDirectoryType;
 
 /**
  * Created by Ian on 1/5/2017.
@@ -8,5 +8,5 @@ import com.example.ian.deffsound.MusicCategory;
 public interface MusicItem {
     boolean isSong();
     String getTitle();
-    MusicCategory getCategory();
+    MusicDirectoryType getCategory();
 }

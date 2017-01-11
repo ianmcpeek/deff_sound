@@ -5,12 +5,13 @@ import android.util.Log;
 import com.example.ian.deffsound.songview.Song;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by Ian on 11/25/2016.
  */
 public class SongQueue {
-    private int currentSong;
+    private int curPosInQueue;
     private boolean shuffleOn;
     private boolean repeatQueueOn;
     private boolean repeatSongOn;
@@ -19,8 +20,8 @@ public class SongQueue {
 
     //shuffle sort for everytime shuffle is pressed
 
-    public SongQueue(int currentSong, ArrayList<Song> songList) {
-        this.currentSong = currentSong;
+    public SongQueue(int curPosInQueue, ArrayList<Song> songList) {
+        this.curPosInQueue = curPosInQueue;
         this.songList = songList;
 
         //check userPreferences for current control preferences (repeat, shuffle, etc.)
@@ -39,18 +40,18 @@ public class SongQueue {
         } else if(repeatQueueOn) {
             Log.e("NEXT", "QUEUE ON REPEAT");
             //check if repeatQueue is set
-            if(currentSong + 1 >= songList.size()) currentSong = 0;
-            else currentSong += 1;
+            if(curPosInQueue + 1 >= songList.size()) curPosInQueue = 0;
+            else curPosInQueue += 1;
         } else {
-            Log.e("NEXT", "Current Song index: " + currentSong);
+            Log.e("NEXT", "Current Song index: " + curPosInQueue);
             //fringe cases
-            if(currentSong + 1 >= songList.size()) return null;
-            currentSong += 1;
+            if(curPosInQueue + 1 >= songList.size()) return null;
+            curPosInQueue += 1;
         }
         //check if queue is shuffled
         if(shuffleOn) {
-            Log.e("SHUFFLE", "Current Song: " + currentSong + "Next Shuffled Song: " + shuffleMapping[currentSong]);
-            return songList.get(shuffleMapping[currentSong]);
+            Log.e("SHUFFLE", "Current Song: " + curPosInQueue + "Next Shuffled Song: " + shuffleMapping[curPosInQueue]);
+            return songList.get(shuffleMapping[curPosInQueue]);
         }
         return getCurrentSong();
     }
@@ -62,35 +63,31 @@ public class SongQueue {
             //check if queue is shuffled
         } else if(repeatQueueOn) {
             //check if repeatQueue is set
-            if(currentSong - 1 < 0) currentSong = songList.size()-1;
-            else currentSong -= 1;
+            if(curPosInQueue - 1 < 0) curPosInQueue = songList.size()-1;
+            else curPosInQueue -= 1;
         } else {
-            if(currentSong - 1 < 0) return null;
-            currentSong -= 1;
+            if(curPosInQueue - 1 < 0) return null;
+            curPosInQueue -= 1;
         }
         //check if queue is shuffled
-        if(shuffleOn) return songList.get(shuffleMapping[currentSong]);
+        if(shuffleOn) return songList.get(shuffleMapping[curPosInQueue]);
         return getCurrentSong();
     }
 
     public Song getCurrentSong() {
-        Log.e("CURSONG", "index now: " + currentSong);
-        if(shuffleOn) return songList.get(shuffleMapping[currentSong]);
-        return songList.get(currentSong);
+        Log.e("CURSONG", "index now: " + curPosInQueue);
+        if(shuffleOn) return songList.get(shuffleMapping[curPosInQueue]);
+        return songList.get(curPosInQueue);
     }
 
     public void setCurrentSong(int i) {
-        //if currentSong changed manually, shuffled order needs to be reset
-        currentSong = i;
+        //if curPosInQueue changed manually, shuffled order needs to be reset
+        curPosInQueue = i;
        // if(shuffleOn) shuffleQueue();
     }
 
     public Song getSong(int i) {
         return songList.get(i);
-    }
-
-    public int getCurrentSongIndex() {
-        return currentSong;
     }
 
     public ArrayList<Song> getSongList() {
@@ -99,25 +96,29 @@ public class SongQueue {
 
     private int[] shuffleQueue() {
         int[] shuffled = new int[songList.size()];
-        int index = 0;
-        int shuffledIndex = 0;
         for(int i = 0; i < shuffled.length; i++) {
             shuffled[i] = i;
         }
         for(int i = 0; i < shuffled.length; i++) {
+            if(i == curPosInQueue) continue;
             int rand = (int) (Math.random() * (songList.size() - i) + i);
-            //temp fix to keep current song in shuffled playlist
-            if(i == currentSong) shuffledIndex = rand;
+            while(rand == curPosInQueue)
+                rand = (int) (Math.random() * (songList.size() - i) + i);
             int swap = shuffled[i];
             shuffled[i] = shuffled[rand];
             shuffled[rand] = swap;
         }
-        //replace currentSong in queue position
-        shuffled[shuffledIndex] = shuffled[currentSong];
-        shuffled[currentSong] = currentSong;
 
+        Log.e("SHUFFLE", Arrays.toString(shuffled));
+        int [] a = Arrays.copyOf(shuffled, songList.size());
+        Arrays.sort(a);
+        Log.e("SHUFFLE", Arrays.toString(a));
 
         return shuffled;
+    }
+
+    public void resetQueue() {
+        curPosInQueue = 0;
     }
 
     public boolean isShuffled() {
@@ -135,7 +136,7 @@ public class SongQueue {
     public void toggleShuffle() {
         if(shuffleOn) {
             shuffleOn = false;
-            currentSong = shuffleMapping[currentSong];
+            curPosInQueue = shuffleMapping[curPosInQueue];
         } else {
             shuffleOn = true;
             shuffleMapping = shuffleQueue();
