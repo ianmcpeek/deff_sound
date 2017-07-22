@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:onClick="musicItemPicked">
+    android:layout_marginTop="10dp"
+    android:background="@drawable/item_background"
+    android:onClick="musicItemPicked"
+    android:orientation="vertical">
 
     <TextView
-        android:id ="@+id/artist_title"
+        android:id="@+id/artist_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textColor="#000000"
-        android:textSize="18sp" />
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="sans-serif-condensed"
+        android:textColor="@color/abc_search_url_text_selected"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <TextView
-        android:id ="@+id/artist_n_albums"
+        android:id="@+id/artist_n_albums"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textColor="#000000"
-        android:textSize="18sp" />
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:fontFamily="sans-serif-condensed"
+        android:textColor="@color/button_material_dark"
+        android:textSize="14sp" />
 
 </LinearLayout>

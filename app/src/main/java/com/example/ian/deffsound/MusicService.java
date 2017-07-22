@@ -1,8 +1,11 @@
 package com.example.ian.deffsound;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -34,6 +37,41 @@ public class MusicService extends Service implements
 
     private boolean autoplay = true;
 
+
+    private NoisyAudioReciever noisyAudioReciever;
+
+    private class NoisyAudioReciever extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+                pausePlayer();
+            }
+        }
+    }
+
+    AudioManager audioManager;
+    AudioManager.OnAudioFocusChangeListener audioFocusChangeListener =
+            new AudioManager.OnAudioFocusChangeListener() {
+
+                @Override
+                public void onAudioFocusChange(int focusChange) {
+                    if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                        if(player.isPlaying()) {
+                            unregisterReceiver(noisyAudioReciever);
+                        }
+                        player.pause();
+                    }
+                }
+            };
+
+    private boolean hasAudioFocus() {
+        int result = audioManager.requestAudioFocus(audioFocusChangeListener,
+                AudioManager.STREAM_MUSIC,
+                AudioManager.AUDIOFOCUS_GAIN);
+        return result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -41,6 +79,8 @@ public class MusicService extends Service implements
         player = new MediaPlayer();
         initPlayer();
 
+        noisyAudioReciever = new NoisyAudioReciever();
+        audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
     }
 
     public void initPlayer() {
@@ -50,7 +90,6 @@ public class MusicService extends Service implements
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
-        //playSong();
     }
 
     public class MusicBinder extends Binder {
@@ -78,7 +117,6 @@ public class MusicService extends Service implements
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        //mp.stop();
         if(queue.nextSong() != null) {
             playSong();
         } else {
@@ -87,6 +125,8 @@ public class MusicService extends Service implements
             autoplay = false;
             prepareSong();
             mp.prepareAsync();
+            unregisterReceiver(noisyAudioReciever);
+            audioManager.abandonAudioFocus(audioFocusChangeListener);
         }
     }
 
@@ -101,7 +141,12 @@ public class MusicService extends Service implements
         Intent completed = new Intent("SONG_PREPARED");
         LocalBroadcastManager.getInstance(this).sendBroadcast(completed);
         //start playback
-        if(autoplay) mp.start();
+
+        IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+        registerReceiver(noisyAudioReciever, intentFilter);
+        if(hasAudioFocus()) {
+            if(autoplay) mp.start();
+        }
     }
 
     public void setQueue(SongQueue songQueue) {
@@ -154,6 +199,7 @@ public class MusicService extends Service implements
 
     public void pausePlayer() {
         player.pause();
+        unregisterReceiver(noisyAudioReciever);
     }
 
     public void seekTo(int pos) {
@@ -163,6 +209,11 @@ public class MusicService extends Service implements
     public void play() {
         player.start();
         //need playlist over variable to reset on playlist end
+        IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+        registerReceiver(noisyAudioReciever, intentFilter);
+        if(hasAudioFocus()) {
+            player.start();
+        }
     }
 
     public boolean next() {

@@ -100,11 +100,11 @@ public class NowPlayingWidget extends Fragment {
                     if(isPlaying) {
                         mListener.onFragmentInteraction("pause song");
                         isPlaying = false;
-                        playBtn.setImageResource(R.drawable.play);
+                        playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                     } else {
                         mListener.onFragmentInteraction("play song");
                         isPlaying = true;
-                        playBtn.setImageResource(R.drawable.pause);
+                        playBtn.setImageResource(R.drawable.ic_pause_black_24dp);
                     }
                 }
             }
@@ -176,10 +176,10 @@ public class NowPlayingWidget extends Fragment {
                     }
                     ImageView playBtn = (ImageView) act.findViewById(R.id.fragmentPlayBtn);
                     if(srv.isPlaying()) {
-                        playBtn.setImageResource(R.drawable.pause);
+                        playBtn.setImageResource(R.drawable.ic_pause_black_24dp);
                         isPlaying = true;
                     } else {
-                        playBtn.setImageResource(R.drawable.play);
+                        playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
                         isPlaying = false;
                     }
                 }

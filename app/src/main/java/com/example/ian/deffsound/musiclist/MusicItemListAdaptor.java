@@ -1,17 +1,17 @@
 package com.example.ian.deffsound.musiclist;
 
 import android.content.Context;
-import android.util.Log;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.ian.deffsound.R;
-import com.example.ian.deffsound.musiclist.ArtistItem;
-import com.example.ian.deffsound.musiclist.MusicItem;
 
 import java.util.ArrayList;
 
@@ -70,7 +70,8 @@ public class MusicItemListAdaptor extends BaseAdapter {
         TextView nAlbumView = (TextView) artistItemLay.findViewById(R.id.artist_n_albums);
 
         titleView.setText(artist.getTitle());
-        nAlbumView.setText(artist.getAlbumCount() + " album(s)");
+        String albumLabel = artist.getAlbumCount() > 1 ? " albums" : " album";
+        nAlbumView.setText(artist.getAlbumCount() + albumLabel);
 
         return artistItemLay;
     }
@@ -83,8 +84,13 @@ public class MusicItemListAdaptor extends BaseAdapter {
         TextView nTrackView = (TextView) albumItemLay.findViewById(R.id.album_n_songs);
         TextView yearView = (TextView) albumItemLay.findViewById(R.id.album_year);
 
+        Bitmap bm = BitmapFactory.decodeFile(album.getAlbumArt());
+        ImageView albumArt = (ImageView) albumItemLay.findViewById(R.id.album_art);
+        albumArt.setImageBitmap(bm);
+
         titleView.setText(album.getTitle());
-        nTrackView.setText(album.getTrackCount() + " tracks(s)");
+        String songLabel = album.getTrackCount() > 1 ? " songs" : " song";
+        nTrackView.setText(album.getTrackCount() + songLabel);
         yearView.setText(album.getYear());
 
         return albumItemLay;
@@ -96,12 +102,10 @@ public class MusicItemListAdaptor extends BaseAdapter {
                 (LinearLayout)songInf.inflate(R.layout.song_item, parent, false);
         TextView titleView = (TextView) songItemLay.findViewById(R.id.song_title);
         TextView artistView = (TextView) songItemLay.findViewById(R.id.song_artist);
-        TextView albumView = (TextView) songItemLay.findViewById(R.id.song_album);
         TextView trackLengthView = (TextView) songItemLay.findViewById(R.id.song_length);
 
         titleView.setText(song.getTitle());
         artistView.setText(song.getArtist());
-        albumView.setText(song.getAlbum());
         trackLengthView.setText(song.getTrackLength());
 
         return songItemLay;

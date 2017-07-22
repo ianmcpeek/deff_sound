@@ -6,19 +6,38 @@ android:layout_width="fill_parent"
 android:orientation="vertical"
 android:background="#FFFFFF"
 tools:context=".MainActivity">
-    <ListView
-        android:id="@+id/song_list"
-        android:layout_height="480dp"
-        android:layout_width="fill_parent">
-    </ListView>
-    <fragment android:name="com.example.ian.deffsound.NowPlayingWidget"
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:layout_weight="70"
+        android:orientation="vertical">
+
+        <fragment
+            android:id="@+id/navigationFragment"
+            android:name="com.example.ian.deffsound.NavigationWidget"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_weight="30" />
+
+        <ListView
+            android:id="@+id/song_list"
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_weight="60"
+            android:divider="@android:color/background_light"
+            android:dividerHeight="5dp"
+            android:footerDividersEnabled="true"
+            android:headerDividersEnabled="true"></ListView>
+    </LinearLayout>
+
+    <fragment
         android:id="@+id/nowPlayingWidget"
-        android:layout_weight="1"
+        android:name="com.example.ian.deffsound.NowPlayingWidget"
         android:layout_width="match_parent"
-        android:layout_height="50dp" />
-    <fragment android:name="com.example.ian.deffsound.NavigationWidget"
-        android:id="@+id/navigationFragment"
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="50dp" />
+        android:layout_height="wrap_content"
+        android:layout_weight="30" />
+
 </LinearLayout>

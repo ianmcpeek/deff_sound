@@ -1,54 +1,69 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context="com.example.ian.deffsound.NowPlayingWidget"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nowPlayingWidgetFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:clickable="false"
     android:visibility="gone"
-    android:id="@+id/nowPlayingWidgetFragment">
-
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/background"
-        android:background="@color/SkyHi"/>
-
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:id="@+id/fragmentUpBtn"
-        android:layout_gravity="left|top"
-        android:src="@drawable/up"
-        android:layout_marginLeft="10dp" />
+    tools:context="com.example.ian.deffsound.NowPlayingWidget">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center_horizontal|top">
+        android:background="@color/background_floating_material_light"
+        android:orientation="horizontal">
 
+        <ImageView
+            android:id="@+id/fragmentUpBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="2dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_keyboard_arrow_up_black_24dp" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Song Name"
-            android:id="@+id/fragSongTxt"
-            android:layout_gravity="center_horizontal" />
+            android:layout_height="match_parent"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Artist Name - Album Name"
-            android:id="@+id/fragArtistTxt"
-            android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:id="@+id/fragSongTxt"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:gravity="center_horizontal"
+                android:text="Song Name"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@color/abc_search_url_text_selected"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/fragArtistTxt"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:gravity="center_horizontal"
+                android:text="Artist Name - Album Name"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/button_material_dark"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/fragmentPlayBtn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="2dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_play_arrow_black_24dp" />
+
     </LinearLayout>
-
-    <ImageView
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:id="@+id/fragmentPlayBtn"
-        android:layout_gravity="right|top"
-        android:src="@drawable/play"
-        android:layout_marginRight="10dp" />
 
 </FrameLayout>

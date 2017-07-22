@@ -10,7 +10,14 @@
     <!-- Colors from http://www.colourlovers.com/palette/1804326/sea_calling-->
     <color name="Water">#086EB6</color>
     <color name="Wave">#048FEA</color>
-    <color name="SkyHi">#63BEED</color>
-    <color name="D4EEFB">#D4EEFB</color>
+    <color name="SkyHi">#63beed</color>
+    <color name="D4EEFB">#d4eefb</color>
     <color name="BecauseYoureMine">#E9D3AA</color>
+
+    <color name="colorPrimary">#125688</color>
+    <color name="colorPrimaryDark">#125688</color>
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="windowBackground">#FFFFFF</color>
+    <color name="navigationBarColor">#000000</color>
+    <color name="colorAccent">#c8e8ff</color>
 </resources>

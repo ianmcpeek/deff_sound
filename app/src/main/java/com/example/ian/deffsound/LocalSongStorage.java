@@ -30,7 +30,7 @@ public class LocalSongStorage {
     }
 
     public static ArrayList<MusicItem> retrieveAllArtistsDirectory(Context context) {
-        return getAlbumDirectory(context, "", null, MediaStore.Audio.Media.ARTIST + " COLLATE NOCASE ASC");
+        return getArtistDirectory(context, "", null, MediaStore.Audio.Media.ARTIST + " COLLATE NOCASE ASC");
     }
 
     public static ArrayList<MusicItem> retrieveAllAlbumsDirectory(Context context) {
@@ -42,7 +42,7 @@ public class LocalSongStorage {
     }
 
     public static ArrayList<MusicItem> retrieveAllAlbumsFromArtistDirectory(Context context, String artist) {
-        return getSongDirectory(context, MediaStore.Audio.Albums.ARTIST + " LIKE ?",
+        return getAlbumDirectory(context, MediaStore.Audio.Albums.ARTIST + " LIKE ?",
                 new String[]{artist + "%"},
                 MediaStore.Audio.Albums.FIRST_YEAR  + " DESC, " + MediaStore.Audio.Media.ALBUM);
     }
@@ -103,8 +103,7 @@ public class LocalSongStorage {
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisAlbums = musicCursor.getString(albumColumn);
                 if(artistList.size() > 0 &&
-                        thisTitle.contains(artistList.get(
-                                artistList.size() - 1).getTitle())) continue;
+                        thisTitle.contains("feat.")) continue;
                 artistList.add( new ArtistItem(thisTitle, Integer.valueOf(thisAlbums)) );
             } while (musicCursor.moveToNext());
         }
@@ -125,13 +124,15 @@ public class LocalSongStorage {
             int titleColumn = musicCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM);
             int trackColumn = musicCursor.getColumnIndex(MediaStore.Audio.Albums.NUMBER_OF_SONGS);
             int yearColumn = musicCursor.getColumnIndex(MediaStore.Audio.Albums.FIRST_YEAR);
+            int albumArtColumn = musicCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART);
             do {
                 long thisId = musicCursor.getLong(idColumn);
                 String thisTitle = musicCursor.getString(titleColumn);
                 String thisTrack = musicCursor.getString(trackColumn);
                 String thisYear = musicCursor.getString(yearColumn);
+                String thisAlbumArt = musicCursor.getString(albumArtColumn);
 
-                albumList.add(new AlbumItem(thisTitle, Integer.valueOf(thisTrack), thisYear));
+                albumList.add(new AlbumItem(thisTitle, Integer.valueOf(thisTrack), thisYear, thisAlbumArt));
             } while (musicCursor.moveToNext());
         }
         //musicItemList = albumList;

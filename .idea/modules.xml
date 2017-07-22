@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/DeffSound.iml" filepath="$PROJECT_DIR$/DeffSound.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deff_sound.iml" filepath="$PROJECT_DIR$/deff_sound.iml" />
     </modules>
   </component>
 </project>

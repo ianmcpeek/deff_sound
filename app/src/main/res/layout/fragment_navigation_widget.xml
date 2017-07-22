@@ -1,53 +1,163 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context="com.example.ian.deffsound.NavigationWidget">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minHeight="400dp"
+    tools:context="com.example.ian.deffsound.NavigationWidget">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
-        android:weightSum="1">
+        android:layout_weight="0.20"
+        android:background="@color/background_floating_material_light"
+        android:orientation="vertical">
 
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="75dp"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:id="@+id/imageView"
-            android:src="@drawable/home"
-            android:layout_weight="0.20" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="30"
+            android:orientation="horizontal">
 
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="75dp"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:id="@+id/nav_artist"
-            android:src="@drawable/artist"
-            android:layout_weight="0.20" />
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="75dp"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:id="@+id/nav_album"
-            android:src="@drawable/album"
-            android:layout_weight="0.20" />
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="75dp"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:id="@+id/nav_song"
-            android:src="@drawable/song"
-            android:layout_weight="0.20" />
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="75dp"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:id="@+id/imageView5"
-            android:src="@drawable/search"
-            android:layout_weight="0.20" />
+            <ImageView
+                android:id="@+id/list"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:src="@drawable/ic_dehaze_black_24dp" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="50"
+                android:fontFamily="sans-serif"
+                android:text="Super Mix"
+                android:textColor="@color/abc_search_url_text_selected"
+                android:textSize="18sp" />
+
+            <ImageView
+                android:id="@+id/search"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="right"
+                android:layout_marginLeft="20dp"
+                android:layout_weight="0.22"
+                android:src="@drawable/ic_search_black_24dp" />
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:src="@drawable/ic_more_vert_black_24dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_weight="30"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/nav_artist"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/imageView3"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="60"
+                    android:src="@drawable/ic_person_black_24dp" />
+
+                <TextView
+                    android:id="@+id/artist_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_weight="60"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center"
+                    android:paddingBottom="5dp"
+                    android:text="Artist"
+                    android:textAllCaps="true"
+                    android:textColor="@color/button_material_dark"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_album"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/imageView4"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="60"
+                    android:src="@drawable/ic_disc_full_black_24dp" />
+
+                <TextView
+                    android:id="@+id/album_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_weight="60"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center"
+                    android:paddingBottom="5dp"
+                    android:text="Album"
+                    android:textAllCaps="true"
+                    android:textColor="@color/button_material_dark"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/nav_song"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/imageView5"
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_weight="60"
+                    android:src="@drawable/ic_audiotrack_black_24dp" />
+
+                <TextView
+                    android:id="@+id/song_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="5dp"
+                    android:layout_weight="60"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center"
+                    android:paddingBottom="5dp"
+                    android:text="Song"
+                    android:textAllCaps="true"
+                    android:textColor="@color/button_material_dark"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+        </LinearLayout>
     </LinearLayout>
 
 </FrameLayout>

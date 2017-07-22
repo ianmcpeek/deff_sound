@@ -10,14 +10,13 @@ public class AlbumItem implements MusicItem {
     private String title;
     private int trackCount;
     private String yearReleased;
-    //eventually used to retrieve album cover
-    private String imageUri;
+    private String albumArt;
 
-    public AlbumItem(String title, int trackCount, String yearReleased) {
+    public AlbumItem(String title, int trackCount, String yearReleased, String albumArt) {
         this.title = title;
         this.trackCount = trackCount;
         this.yearReleased = yearReleased;
-        this.imageUri = null;
+        this.albumArt = albumArt;
     }
 
     @Override
@@ -38,6 +37,8 @@ public class AlbumItem implements MusicItem {
     }
 
     public String getYear() { return yearReleased; }
+
+    public String getAlbumArt() { return albumArt; }
 
 
 }

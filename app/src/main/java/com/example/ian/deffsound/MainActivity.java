@@ -1,17 +1,13 @@
 package com.example.ian.deffsound;
 
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -21,18 +17,14 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 
-import com.example.ian.deffsound.musiclist.AlbumItem;
 import com.example.ian.deffsound.musiclist.MusicItem;
 import com.example.ian.deffsound.musiclist.MusicItemListAdaptor;
-import com.example.ian.deffsound.musiclist.SongItem;
 import com.example.ian.deffsound.songview.Song;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Stack;
 
 
-public class MainActivity extends ActionBarActivity implements NavigationWidget.OnFragmentInteractionListener,
+public class MainActivity extends AppCompatActivity implements NavigationWidget.OnFragmentInteractionListener,
     NowPlayingWidget.OnFragmentInteractionListener{
 
 //    private MusicService musicService;
@@ -97,11 +89,7 @@ public class MainActivity extends ActionBarActivity implements NavigationWidget.
     private void displayCurrentDirectoryTitle() {
         MusicDirectoryQuery query = queryHistory.getCurrentDirectoryQuery();
         if(query == null) return;
-        if(query.hasQueryTitle()) {
-            getSupportActionBar().setTitle(query.getTitle());
-        } else {
-            getSupportActionBar().setTitle(MusicDirectoryType.toString(query.getMusicDirectoryType()));
-        }
+        // if(query.hasQueryTitle())
     }
 
     public void displayDirectory() {

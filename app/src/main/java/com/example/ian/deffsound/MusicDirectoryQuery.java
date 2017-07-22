@@ -32,6 +32,7 @@ public class MusicDirectoryQuery {
         if (this == o) return true;
         if (!(o instanceof MusicDirectoryQuery)) return false;
         MusicDirectoryQuery q = (MusicDirectoryQuery) o;
+        if(q.getTitle() == null && this.getTitle() == null) return this.getMusicDirectoryType() == q.getMusicDirectoryType();
         return this.getMusicDirectoryType() == q.getMusicDirectoryType() &&
                 this.getTitle().equals(q.getTitle());
     }

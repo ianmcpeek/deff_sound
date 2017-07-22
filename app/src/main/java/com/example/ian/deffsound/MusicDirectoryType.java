@@ -7,7 +7,6 @@ package com.example.ian.deffsound;
 public enum MusicDirectoryType {
     ARTIST,
     ALBUM,
-    PLAYLIST,
     SONG;
 
     public static String toString(MusicDirectoryType type) {

@@ -9,6 +9,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 
 /**
@@ -68,7 +70,7 @@ public class NavigationWidget extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_navigation_widget, container, false);
 
-        ImageView artist = (ImageView) v.findViewById(R.id.nav_artist);
+        LinearLayout artist = (LinearLayout) v.findViewById(R.id.nav_artist);
         artist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,7 +80,7 @@ public class NavigationWidget extends Fragment {
             }
         });
 
-        ImageView album = (ImageView) v.findViewById(R.id.nav_album);
+        LinearLayout album = (LinearLayout) v.findViewById(R.id.nav_album);
         album.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,7 +90,7 @@ public class NavigationWidget extends Fragment {
             }
         });
 
-        ImageView song = (ImageView) v.findViewById(R.id.nav_song);
+        LinearLayout song = (LinearLayout) v.findViewById(R.id.nav_song);
         song.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

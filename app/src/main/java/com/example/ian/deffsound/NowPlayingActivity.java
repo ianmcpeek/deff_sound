@@ -8,9 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Handler;
@@ -33,6 +35,9 @@ import com.example.ian.deffsound.songview.Song;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
+
+import static android.R.attr.typeface;
 
 
 public class NowPlayingActivity extends AppCompatActivity {
@@ -49,7 +54,6 @@ public class NowPlayingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_now_playing);
-        Intent intent = getIntent();
         reciever = new MusicServiceReciever();
 
         ImageView downBtn = (ImageView) findViewById(R.id.downBtn);
@@ -206,10 +210,10 @@ public class NowPlayingActivity extends AppCompatActivity {
         ImageView playBtn = (ImageView)findViewById(R.id.playBtn);
         if(musicService.isPlaying()) {
             musicService.pausePlayer();
-            playBtn.setImageResource(R.drawable.play);
+            playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
         } else {
             musicService.play();
-            playBtn.setImageResource(R.drawable.pause);
+            playBtn.setImageResource(R.drawable.ic_pause_black_24dp);
         }
     }
 
@@ -237,9 +241,9 @@ public class NowPlayingActivity extends AppCompatActivity {
         boolean shuffleOn = musicService.shuffle();
         ImageView shuffleBtn = (ImageView)findViewById(R.id.shuffleBtn);
         if(shuffleOn) {
-            shuffleBtn.setImageResource(R.drawable.shuffle);
+            shuffleBtn.setImageResource(R.drawable.ic_shuffle_black_24dp);
         } else {
-            shuffleBtn.setImageResource(R.drawable.shuffle_off);
+            shuffleBtn.setImageResource(R.drawable.ic_shuffle_disabled_24dp);
         }
     }
 
@@ -248,20 +252,20 @@ public class NowPlayingActivity extends AppCompatActivity {
        ImageView repeatBtn = (ImageView)findViewById(R.id.repeatBtn);
        switch (repeatMode) {
            case 1:
-               repeatBtn.setImageResource(R.drawable.repeat_queue);
+               repeatBtn.setImageResource(R.drawable.ic_autorenew_black_24dp);
                break;
            case 2:
-               repeatBtn.setImageResource(R.drawable.repeat_song);
+               repeatBtn.setImageResource(R.drawable.ic_replay_black_24dp);
                break;
            default:
-               repeatBtn.setImageResource(R.drawable.repeat_off);
+               repeatBtn.setImageResource(R.drawable.ic_autorenew_disabled_24dp);
                break;
        }
     }
 
     private void setPause() {
         ImageView playBtn = (ImageView)findViewById(R.id.playBtn);
-        playBtn.setImageResource(R.drawable.play);
+        playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
     }
 
     //VIEW UPDATES
@@ -276,6 +280,7 @@ public class NowPlayingActivity extends AppCompatActivity {
             songView.setSelected(true);
             songView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
             songView.setSingleLine(true);
+
         }
     }
 
@@ -285,27 +290,27 @@ public class NowPlayingActivity extends AppCompatActivity {
             ImageView shuffleBtn = (ImageView) findViewById(R.id.shuffleBtn);
             ImageView repeatBtn = (ImageView) findViewById(R.id.repeatBtn);
             if(musicService.isPlaying()) {
-                playBtn.setImageResource(R.drawable.pause);
+                playBtn.setImageResource(R.drawable.ic_pause_black_24dp);
             } else {
-                playBtn.setImageResource(R.drawable.play);
+                playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
             }
             if(musicService.isShuffled()) {
-                shuffleBtn.setImageResource(R.drawable.shuffle);
+                shuffleBtn.setImageResource(R.drawable.ic_shuffle_black_24dp);
             } else {
-                shuffleBtn.setImageResource(R.drawable.shuffle_off);
+                shuffleBtn.setImageResource(R.drawable.ic_shuffle_disabled_24dp);
             }
 //            return 1; //queue
 //            return 2; //song
 //            return 0;//none
             switch(musicService.isRepeat()) {
                 case 1:
-                    repeatBtn.setImageResource(R.drawable.repeat_queue);
+                    repeatBtn.setImageResource(R.drawable.ic_autorenew_black_24dp);
                     break;
                 case 2:
-                    repeatBtn.setImageResource(R.drawable.repeat_song);
+                    repeatBtn.setImageResource(R.drawable.ic_replay_black_24dp);
                     break;
                 case 0:
-                    repeatBtn.setImageResource(R.drawable.repeat_off);
+                    repeatBtn.setImageResource(R.drawable.ic_autorenew_disabled_24dp);
                     break;
             }
         }
@@ -352,8 +357,8 @@ public class NowPlayingActivity extends AppCompatActivity {
             //albumArt.setImageBitmap(bm);
             ContentResolver musicResolve = getContentResolver();
             Uri albumUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-            Cursor music =musicResolve.query(albumUri, null, MediaStore.Audio.Media.TITLE + " LIKE ?",
-                    new String[]{musicService.getCurrentSong().getTitle()}, null);
+            Cursor music =musicResolve.query(albumUri, null, MediaStore.Audio.Media.TITLE + " LIKE ? AND ALBUM LIKE ?",
+                    new String[]{musicService.getCurrentSong().getTitle(), musicService.getCurrentSong().getAlbum()}, null);
 
 
 
