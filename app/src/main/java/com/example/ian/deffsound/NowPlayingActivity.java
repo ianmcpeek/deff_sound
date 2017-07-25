@@ -3,16 +3,13 @@ package com.example.ian.deffsound;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Typeface;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Handler;
@@ -23,21 +20,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.example.ian.deffsound.songview.Song;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Locale;
-
-import static android.R.attr.typeface;
 
 
 public class NowPlayingActivity extends AppCompatActivity {
@@ -125,11 +111,15 @@ public class NowPlayingActivity extends AppCompatActivity {
                 new IntentFilter("SONG_PREPARED");
         LocalBroadcastManager.getInstance(this).registerReceiver(reciever, filter);
         if(musicBound) {
-            // && musicService.isPlaying()
-            Log.e("HANDLER", "trying to play song before set");
+            setPlayerControls();
+            setScreen();
+            updateSeekBar();
             songProgressHandler.postDelayed(songProgressRunnable, 0);
-            Intent completed = new Intent("SONG_PREPARED");
-            LocalBroadcastManager.getInstance(this).sendBroadcast(completed);
+            // && musicService.isPlaying()
+//            Log.e("HANDLER", "trying to play song before set");
+//            songProgressHandler.postDelayed(songProgressRunnable, 0);
+//            Intent completed = new Intent("SONG_PREPARED");
+//            LocalBroadcastManager.getInstance(this).sendBroadcast(completed);
         }
     }
 
@@ -154,28 +144,6 @@ public class NowPlayingActivity extends AppCompatActivity {
         super.onStop();
 //        if(musicBound)
 //            unbindService(musicConnection);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_now_playing, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     private ServiceConnection musicConnection =
@@ -210,10 +178,10 @@ public class NowPlayingActivity extends AppCompatActivity {
         ImageView playBtn = (ImageView)findViewById(R.id.playBtn);
         if(musicService.isPlaying()) {
             musicService.pausePlayer();
-            playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+            playBtn.setImageResource(R.drawable.ic_play_arrow_accent_24dp);
         } else {
             musicService.play();
-            playBtn.setImageResource(R.drawable.ic_pause_black_24dp);
+            playBtn.setImageResource(R.drawable.ic_pause_accent_24dp);
         }
     }
 
@@ -241,7 +209,7 @@ public class NowPlayingActivity extends AppCompatActivity {
         boolean shuffleOn = musicService.shuffle();
         ImageView shuffleBtn = (ImageView)findViewById(R.id.shuffleBtn);
         if(shuffleOn) {
-            shuffleBtn.setImageResource(R.drawable.ic_shuffle_black_24dp);
+            shuffleBtn.setImageResource(R.drawable.ic_shuffle_accent_24dp);
         } else {
             shuffleBtn.setImageResource(R.drawable.ic_shuffle_disabled_24dp);
         }
@@ -252,10 +220,10 @@ public class NowPlayingActivity extends AppCompatActivity {
        ImageView repeatBtn = (ImageView)findViewById(R.id.repeatBtn);
        switch (repeatMode) {
            case 1:
-               repeatBtn.setImageResource(R.drawable.ic_autorenew_black_24dp);
+               repeatBtn.setImageResource(R.drawable.ic_autorenew_accent_24dp);
                break;
            case 2:
-               repeatBtn.setImageResource(R.drawable.ic_replay_black_24dp);
+               repeatBtn.setImageResource(R.drawable.ic_replay_accent_24dp);
                break;
            default:
                repeatBtn.setImageResource(R.drawable.ic_autorenew_disabled_24dp);
@@ -265,7 +233,7 @@ public class NowPlayingActivity extends AppCompatActivity {
 
     private void setPause() {
         ImageView playBtn = (ImageView)findViewById(R.id.playBtn);
-        playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+        playBtn.setImageResource(R.drawable.ic_play_arrow_accent_24dp);
     }
 
     //VIEW UPDATES
@@ -290,12 +258,12 @@ public class NowPlayingActivity extends AppCompatActivity {
             ImageView shuffleBtn = (ImageView) findViewById(R.id.shuffleBtn);
             ImageView repeatBtn = (ImageView) findViewById(R.id.repeatBtn);
             if(musicService.isPlaying()) {
-                playBtn.setImageResource(R.drawable.ic_pause_black_24dp);
+                playBtn.setImageResource(R.drawable.ic_pause_accent_24dp);
             } else {
-                playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                playBtn.setImageResource(R.drawable.ic_play_arrow_accent_24dp);
             }
             if(musicService.isShuffled()) {
-                shuffleBtn.setImageResource(R.drawable.ic_shuffle_black_24dp);
+                shuffleBtn.setImageResource(R.drawable.ic_shuffle_accent_24dp);
             } else {
                 shuffleBtn.setImageResource(R.drawable.ic_shuffle_disabled_24dp);
             }
@@ -304,10 +272,10 @@ public class NowPlayingActivity extends AppCompatActivity {
 //            return 0;//none
             switch(musicService.isRepeat()) {
                 case 1:
-                    repeatBtn.setImageResource(R.drawable.ic_autorenew_black_24dp);
+                    repeatBtn.setImageResource(R.drawable.ic_autorenew_accent_24dp);
                     break;
                 case 2:
-                    repeatBtn.setImageResource(R.drawable.ic_replay_black_24dp);
+                    repeatBtn.setImageResource(R.drawable.ic_replay_accent_24dp);
                     break;
                 case 0:
                     repeatBtn.setImageResource(R.drawable.ic_autorenew_disabled_24dp);
@@ -337,7 +305,9 @@ public class NowPlayingActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.v("PREPARED", "recieved prepared");
             setScreen();
+            setPlayerControls();
 
             TextView songDurationView = (TextView) findViewById(R.id.trackEndTxt);
             songDurationView.setText(timeFormat(musicService.getDuration()));

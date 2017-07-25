@@ -2,24 +2,16 @@ package com.example.ian.deffsound;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 
@@ -100,11 +92,11 @@ public class NowPlayingWidget extends Fragment {
                     if(isPlaying) {
                         mListener.onFragmentInteraction("pause song");
                         isPlaying = false;
-                        playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                        playBtn.setImageResource(R.drawable.ic_play_arrow_accent_24dp);
                     } else {
                         mListener.onFragmentInteraction("play song");
                         isPlaying = true;
-                        playBtn.setImageResource(R.drawable.ic_pause_black_24dp);
+                        playBtn.setImageResource(R.drawable.ic_pause_accent_24dp);
                     }
                 }
             }
@@ -176,10 +168,10 @@ public class NowPlayingWidget extends Fragment {
                     }
                     ImageView playBtn = (ImageView) act.findViewById(R.id.fragmentPlayBtn);
                     if(srv.isPlaying()) {
-                        playBtn.setImageResource(R.drawable.ic_pause_black_24dp);
+                        playBtn.setImageResource(R.drawable.ic_pause_accent_24dp);
                         isPlaying = true;
                     } else {
-                        playBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                        playBtn.setImageResource(R.drawable.ic_play_arrow_accent_24dp);
                         isPlaying = false;
                     }
                 }

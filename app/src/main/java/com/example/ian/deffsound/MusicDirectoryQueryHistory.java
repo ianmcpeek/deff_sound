@@ -1,6 +1,7 @@
 package com.example.ian.deffsound;
 
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.util.Stack;
 
@@ -9,37 +10,36 @@ import java.util.Stack;
  */
 
 public class MusicDirectoryQueryHistory {
+    private static Stack<MusicDirectoryQuery> queryHistory = new Stack<>();
+    private static MusicDirectoryQuery currentQuery = null;
 
-    private Stack<MusicDirectoryQuery> queryHistory;
-    private MusicDirectoryQuery currentDirectoryQuery;
-
-    public MusicDirectoryQueryHistory(MusicDirectoryQuery query) {
-        currentDirectoryQuery = query;
-        queryHistory = new Stack<MusicDirectoryQuery>();
+    public static void resetQueryHistory(MusicDirectoryQuery query) {
+        queryHistory = new Stack<>();
+        currentQuery = query;
     }
 
-    public MusicDirectoryQuery getCurrentDirectoryQuery() {
-        return currentDirectoryQuery;
+    public static MusicDirectoryQuery getQuery() {
+        return currentQuery;
     }
 
-    public void addToHistory(MusicDirectoryQuery query) {
+    public static void addToHistory(MusicDirectoryQuery query) {
         //check if snapshot identical to previous entry
-        if(currentDirectoryQuery.equals(query)) return;
-        queryHistory.push(currentDirectoryQuery);
-        currentDirectoryQuery = query;
-        //displayListTitle(snapshot);
+        if(getQuery() != null
+            && getQuery().equals(query)) {
+            return;
+        }
+        queryHistory.push(currentQuery);
+        currentQuery = query;
     }
 
-    public MusicDirectoryQuery removeFromHistory() {
+    public static MusicDirectoryQuery removeFromHistory() {
         if(queryHistory.isEmpty()) return null;
         MusicDirectoryQuery query = queryHistory.pop();
-        //querySongs(snapshot);
-        currentDirectoryQuery = query;
-        //displayListTitle(snapshot);
-        return currentDirectoryQuery;
+        currentQuery = query;
+        return query;
     }
 
-    public boolean isEmpty() {
+    public static boolean isEmpty() {
         return queryHistory.isEmpty();
     }
 }

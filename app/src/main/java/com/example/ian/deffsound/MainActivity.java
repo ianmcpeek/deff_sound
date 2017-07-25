@@ -6,61 +6,78 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ListView;
-
-import com.example.ian.deffsound.musiclist.MusicItem;
-import com.example.ian.deffsound.musiclist.MusicItemListAdaptor;
-import com.example.ian.deffsound.songview.Song;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationWidget.OnFragmentInteractionListener,
-    NowPlayingWidget.OnFragmentInteractionListener{
+public class MainActivity extends AppCompatActivity implements MusicItemListFragment.OnFragmentInteractionListener,
+    NowPlayingWidget.OnFragmentInteractionListener {
 
 //    private MusicService musicService;
 //    private Intent playIntent;
     private boolean musicBound = false;
     private MusicService musicService;
-    private ArrayList<Song> playlist;
-    private ArrayList<MusicItem> musicItemList;
-    private ListView musicListView;
-    //used to track user breadcrumbs
 
-    private MusicDirectoryQueryHistory queryHistory;
-
-
-    //private Stack<MusicDirectoryQuery> history;
-    //private MusicDirectoryQuery currentSnapShot =
-     //       new MusicDirectoryQuery(MusicDirectoryType.SONG, "", null, MediaStore.Audio.Media.TITLE);
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private int[] tabIcons = {
+            R.drawable.ic_person_accent_24dp,
+            R.drawable.ic_album_accent_24dp,
+            R.drawable.ic_audiotrack_accent_24dp
+    };
+    ArrayList<MusicItemListFragment> musicItemListFragments;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        playlist = null;
-        musicItemList = new ArrayList<MusicItem>();
-        musicListView = (ListView)findViewById(R.id.song_list);
-        //retrieve data
 
-        //initialize stack and set to default list when history is empty
-        MusicDirectoryQuery defaultQuery = new MusicDirectoryQuery(MusicDirectoryType.SONG, null);
-        queryHistory = new MusicDirectoryQueryHistory(defaultQuery);
+        musicItemListFragments = new ArrayList<>();
 
-        //set & display default directory
-        musicItemList = retrieveDirectoryFromStorage(defaultQuery);
-        displayDirectory();
-        //eventually stack should read from a temp file first before setting screen
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDefaultDisplayHomeAsUpEnabled(true);
 
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        setupViewPager(viewPager);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                musicItemListFragments.get(viewPager.getCurrentItem()).resetHistory();
+                musicItemListFragments.get(viewPager.getCurrentItem()).displayDirectory();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+        setupTabIcons();
 
         //really weird bug where a delay needs to be set to display widget,
         //but the delay is extremely small and unnoticable
@@ -79,62 +96,59 @@ public class MainActivity extends AppCompatActivity implements NavigationWidget.
         h.postDelayed(r, 10);
     }
 
+    private void setupTabIcons() {
+        TextView artistTab = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+        artistTab.setText("ARTIST");
+        artistTab.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_person_accent_24dp, 0, 0);
+        tabLayout.getTabAt(0).setCustomView(artistTab);
+
+        TextView albumTab = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+        albumTab.setText("ALBUM");
+        albumTab.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_album_accent_24dp, 0, 0);
+        tabLayout.getTabAt(1).setCustomView(albumTab);
+
+        TextView songTab = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+        songTab.setText("SONG");
+        songTab.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_audiotrack_accent_24dp, 0, 0);
+        tabLayout.getTabAt(2).setCustomView(songTab);
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdaptor adaptor = new ViewPagerAdaptor(getSupportFragmentManager());
+        viewPager.setAdapter(adaptor);
+    }
+
+    class ViewPagerAdaptor extends FragmentStatePagerAdapter {
+
+        ViewPagerAdaptor(FragmentManager manager) {
+            super(manager);
+            musicItemListFragments.add(0, MusicItemListFragment.newInstance("Artist"));
+            musicItemListFragments.add(1, MusicItemListFragment.newInstance("Album"));
+            musicItemListFragments.add(2, MusicItemListFragment.newInstance("Song"));
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            Log.v("TAB", MusicDirectoryType.getStringFromInt(position));
+            musicItemListFragments.set(position,
+                MusicItemListFragment.newInstance(
+                    MusicDirectoryType.getStringFromInt(position)
+                )
+            );
+            return musicItemListFragments.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return musicItemListFragments.size();
+        }
+    }
+
     @Override
     public void onBackPressed() {
-        if(queryHistory.isEmpty()) {
+        if(MusicDirectoryQueryHistory.isEmpty()) {
             super.onBackPressed();
-        } else stepOutOfDirectory();
-    }
-
-    private void displayCurrentDirectoryTitle() {
-        MusicDirectoryQuery query = queryHistory.getCurrentDirectoryQuery();
-        if(query == null) return;
-        // if(query.hasQueryTitle())
-    }
-
-    public void displayDirectory() {
-        //set list view
-        MusicItemListAdaptor adt = new MusicItemListAdaptor(this, musicItemList);
-        musicListView.setAdapter(adt);
-        displayCurrentDirectoryTitle();
-    }
-
-    private ArrayList<MusicItem> retrieveDirectoryFromStorage(MusicDirectoryQuery query) {
-        if(query == null) return null;
-        ArrayList<MusicItem> directory = null;
-        switch(query.getMusicDirectoryType()) {
-            case ARTIST:
-                directory = LocalSongStorage.retrieveAllArtistsDirectory(MainActivity.this);
-                break;
-            case ALBUM:
-                if(query.hasQueryTitle())
-                    directory = LocalSongStorage.retrieveAllAlbumsFromArtistDirectory(MainActivity.this, query.getTitle());
-                else
-                    directory = LocalSongStorage.retrieveAllAlbumsDirectory(MainActivity.this);
-                break;
-            case SONG:
-                if(query.hasQueryTitle()) {
-                    directory = LocalSongStorage.retrieveSongsInAlbumDirectory(MainActivity.this, query.getTitle());
-                    playlist = LocalSongStorage.retrieveAlbumPlaylist(MainActivity.this, query.getTitle());
-                } else {
-                    directory = LocalSongStorage.retrieveAllSongsDirectory(MainActivity.this);
-                    playlist = LocalSongStorage.retrieveAllSongsPlaylist(MainActivity.this);
-                }
-                break;
-        }
-        return directory;
-    }
-
-    private void stepIntoDirectory(MusicDirectoryQuery query) {
-        musicItemList = retrieveDirectoryFromStorage(query);
-        queryHistory.addToHistory(query);
-        displayDirectory();
-    }
-
-    private void stepOutOfDirectory() {
-        MusicDirectoryQuery query = queryHistory.removeFromHistory();
-        musicItemList = retrieveDirectoryFromStorage(query);
-        displayDirectory();
+        } else musicItemListFragments.get(viewPager.getCurrentItem()).stepOutOfDirectory();
     }
 
     @Override
@@ -162,13 +176,12 @@ public class MainActivity extends AppCompatActivity implements NavigationWidget.
 
     private void displayNowPlayingFragment() {
         FrameLayout lay = (FrameLayout) findViewById(R.id.nowPlayingWidget);
+        if(lay.getVisibility() == View.VISIBLE) return;
         lay.setVisibility(View.VISIBLE);
 
-        //modify size to allow fragment space
-        ListView lv = (ListView) findViewById(R.id.song_list);
-        ViewGroup.LayoutParams params = lv.getLayoutParams();
-        params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 430, getResources().getDisplayMetrics());
-        lv.setLayoutParams(params);
+        ViewGroup.LayoutParams params = viewPager.getLayoutParams();
+        params.height = params.height - lay.getMeasuredHeight();
+        viewPager.setLayoutParams(params);
     }
 
     @Override
@@ -189,72 +202,22 @@ public class MainActivity extends AppCompatActivity implements NavigationWidget.
 //        }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        switch(item.getItemId()) {
-            case R.id.action_shuffle:
-                //shuffle
-                //start nowplaying activity
-//                Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
-//                MainActivity.this.startActivity(intent);
-                break;
-            case R.id.action_end:
-//                stopService(playIntent);
-//                musicService = null;
-                System.exit(0);
-                break;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     private ServiceConnection musicConnection =
-            new ServiceConnection() {
-                @Override
-                public void onServiceConnected(ComponentName name, IBinder service) {
-                    MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
-                    //get service
-                    musicService = binder.getService();
-                    //pass list
-                    musicBound = true;
-                }
+        new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                MusicService.MusicBinder binder = (MusicService.MusicBinder)service;
+                //get service
+                musicService = binder.getService();
+                //pass list
+                musicBound = true;
+            }
 
-                @Override
-                public void onServiceDisconnected(ComponentName name) {
-                    musicBound = false;
-                }
-            };
-
-    public void musicItemPicked(View view) {
-        if(musicItemList == null) return;
-        int pos = Integer.valueOf(view.getTag().toString());
-        MusicItem item = musicItemList.get(pos);
-        //check if song and playlist set
-        if(item.isSong()) {
-            if (playlist != null) startNowPlaying(pos);
-        } else if(item.getCategory() == MusicDirectoryType.ARTIST) {
-            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.ALBUM, item.getTitle()));
-        } else if(item.getCategory() == MusicDirectoryType.ALBUM) {
-            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.SONG, item.getTitle()));
-        }
-    }
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                musicBound = false;
+            }
+        };
 
     private void startNowPlaying(int songIndex) {
         //start nowplaying activity
@@ -262,22 +225,15 @@ public class MainActivity extends AppCompatActivity implements NavigationWidget.
         Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
         //bundle song picked into NowPlayingActivity
         intent.putExtra("songPicked", songIndex);
-        intent.putParcelableArrayListExtra("playlist", playlist);
+        intent.putParcelableArrayListExtra("playlist", musicItemListFragments.get(viewPager.getCurrentItem()).getPlaylist());
         musicService.setQueue(new SongQueue(
-                songIndex, playlist));
+                songIndex, musicItemListFragments.get(viewPager.getCurrentItem()).getPlaylist()));
         MainActivity.this.startActivity(intent);
     }
 
     @Override
     public void onFragmentInteraction(String data) {
-        Log.e("FRAGMENT", "FRAGMENT INTERACTION: " + data);
-        if(data.compareTo("artist") == 0) {
-            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.ARTIST, null));
-        } else if(data.compareTo("album") == 0) {
-            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.ALBUM, null));
-        } else if(data.compareTo("song") == 0) {
-            stepIntoDirectory(new MusicDirectoryQuery(MusicDirectoryType.SONG, null));
-        } else if(data.compareTo("expand") == 0) {
+        if(data.compareTo("expand") == 0) {
             Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
             //bundle song picked into NowPlayingActivity
             MainActivity.this.startActivity(intent);
@@ -285,6 +241,13 @@ public class MainActivity extends AppCompatActivity implements NavigationWidget.
             if(musicBound && !musicService.isPlaying()) musicService.play();
         } else if(data.compareTo("pause song") == 0) {
             if(musicBound && musicService.isPlaying()) musicService.pausePlayer();
+        }
+    }
+
+    @Override
+    public void onFragmentInteraction(String data, int pos) {
+        if(data.compareTo("start_new_playlist") == 0) {
+            startNowPlaying(pos);
         }
     }
 

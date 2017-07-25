@@ -1,5 +1,7 @@
 package com.example.ian.deffsound;
 
+import android.util.Log;
+
 /**
  * Created by ian on 06/01/17.
  */
@@ -23,6 +25,24 @@ public enum MusicDirectoryType {
                 break;
         }
         return s;
+    }
+
+    public static MusicDirectoryType parseString(String type) {
+        if(type.equals(toString(MusicDirectoryType.ARTIST))) {
+            return MusicDirectoryType.ARTIST;
+        } else if(type.equals(toString(MusicDirectoryType.ALBUM))) {
+            return MusicDirectoryType.ALBUM;
+        } else {
+            return MusicDirectoryType.SONG;
+        }
+    }
+
+    public static String getStringFromInt(int type) {
+        MusicDirectoryType directoryType;
+        if(type == 0) directoryType = MusicDirectoryType.ARTIST;
+        else if(type == 1) directoryType = MusicDirectoryType.ALBUM;
+        else directoryType = MusicDirectoryType.SONG;
+        return MusicDirectoryType.toString(directoryType);
     }
 }
 

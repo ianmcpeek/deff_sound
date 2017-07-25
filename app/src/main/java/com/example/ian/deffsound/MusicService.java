@@ -60,7 +60,7 @@ public class MusicService extends Service implements
                         if(player.isPlaying()) {
                             unregisterReceiver(noisyAudioReciever);
                         }
-                        player.pause();
+                        pausePlayer();
                     }
                 }
             };
@@ -199,7 +199,9 @@ public class MusicService extends Service implements
 
     public void pausePlayer() {
         player.pause();
-        unregisterReceiver(noisyAudioReciever);
+        //unregisterReceiver(noisyAudioReciever);
+        Intent completed = new Intent("SONG_PREPARED");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(completed);
     }
 
     public void seekTo(int pos) {
