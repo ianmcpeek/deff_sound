@@ -169,9 +169,7 @@ public class MainActivity extends AppCompatActivity implements MusicItemListFrag
             Intent playIntent = new Intent(this, MusicService.class);
             bindService(playIntent, musicConnection, 0);
             startService(playIntent);
-            //startService(playIntent);
         }
-            //displayNowPlayingFragment if musicbound
     }
 
     private void displayNowPlayingFragment() {
@@ -223,11 +221,8 @@ public class MainActivity extends AppCompatActivity implements MusicItemListFrag
         //start nowplaying activity
         //TODO modify to check if already musicBound
         Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
-        //bundle song picked into NowPlayingActivity
-        intent.putExtra("songPicked", songIndex);
-        intent.putParcelableArrayListExtra("playlist", musicItemListFragments.get(viewPager.getCurrentItem()).getPlaylist());
-        musicService.setQueue(new SongQueue(
-                songIndex, musicItemListFragments.get(viewPager.getCurrentItem()).getPlaylist()));
+
+        musicService.setActivePlaylist(musicItemListFragments.get(viewPager.getCurrentItem()).getPlaylist(), songIndex);
         MainActivity.this.startActivity(intent);
     }
 

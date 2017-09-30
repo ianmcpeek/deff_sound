@@ -115,6 +115,7 @@ public class NowPlayingWidget extends Fragment {
         IntentFilter filter =
                 new IntentFilter("SONG_PREPARED");
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(reciever, filter);
+        updateScreen();
     }
 
     @Override
@@ -149,32 +150,36 @@ public class NowPlayingWidget extends Fragment {
         public void onFragmentInteraction(String data);
     }
 
+    private void updateScreen() {
+        MainActivity act = (MainActivity) getActivity();
+        if(act == null) return;
+        if(act.isMusicBound()) {
+            MusicService srv = act.getMusicService();
+            TextView song = (TextView) act.findViewById(R.id.fragSongTxt);
+            TextView artist = (TextView) act.findViewById(R.id.fragArtistTxt);
+            if(srv.isQueueSet()) {
+                song.setText(srv.getCurrentSong().getTitle());
+                artist.setText(srv.getCurrentSong().getArtist() + " - " +
+                        srv.getCurrentSong().getAlbum());
+            }
+            ImageView playBtn = (ImageView) act.findViewById(R.id.fragmentPlayBtn);
+            if(srv.isPlaying()) {
+                playBtn.setImageResource(R.drawable.ic_pause_accent_24dp);
+                isPlaying = true;
+            } else {
+                playBtn.setImageResource(R.drawable.ic_play_arrow_accent_24dp);
+                isPlaying = false;
+            }
+        }
+    }
+
 
         //Recieves notification of a prepared Song
     private class MusicFragmentReciever extends BroadcastReceiver {
 
             @Override
             public void onReceive(Context context, Intent intent) {
-                MainActivity act = (MainActivity) getActivity();
-                if(act == null) return;
-                if(act.isMusicBound()) {
-                    MusicService srv = act.getMusicService();
-                    TextView song = (TextView) act.findViewById(R.id.fragSongTxt);
-                    TextView artist = (TextView) act.findViewById(R.id.fragArtistTxt);
-                    if(srv.isQueueSet()) {
-                        song.setText(srv.getCurrentSong().getTitle());
-                        artist.setText(srv.getCurrentSong().getArtist() + " - " +
-                                srv.getCurrentSong().getAlbum());
-                    }
-                    ImageView playBtn = (ImageView) act.findViewById(R.id.fragmentPlayBtn);
-                    if(srv.isPlaying()) {
-                        playBtn.setImageResource(R.drawable.ic_pause_accent_24dp);
-                        isPlaying = true;
-                    } else {
-                        playBtn.setImageResource(R.drawable.ic_play_arrow_accent_24dp);
-                        isPlaying = false;
-                    }
-                }
+                updateScreen();
             }
     }
 }

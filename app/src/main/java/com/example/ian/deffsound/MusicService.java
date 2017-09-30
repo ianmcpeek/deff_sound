@@ -16,9 +16,12 @@ import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.example.ian.deffsound.songqueue.NowPlayingController;
+import com.example.ian.deffsound.songqueue.RepeatState;
 import com.example.ian.deffsound.songview.Song;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by Ian on 8/28/2016.
@@ -27,10 +30,8 @@ public class MusicService extends Service implements
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener{
 
-    //media player
     private MediaPlayer player;
-    //song list
-    private SongQueue queue;
+    private NowPlayingController nowPlayingController;
     //current position
     //bind to main activity
     private final IBinder bind = new MusicBinder();
@@ -76,6 +77,7 @@ public class MusicService extends Service implements
     public void onCreate() {
         super.onCreate();
         Log.e("SERVICE", "Music Service has been created");
+        nowPlayingController = new NowPlayingController();
         player = new MediaPlayer();
         initPlayer();
 
@@ -117,10 +119,10 @@ public class MusicService extends Service implements
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if(queue.nextSong() != null) {
+        if(nowPlayingController.getNextAvailableSong() != null) {
             playSong();
         } else {
-            queue.resetQueue();
+            nowPlayingController.resetActivePlaylist();
             mp.reset();
             autoplay = false;
             prepareSong();
@@ -149,18 +151,18 @@ public class MusicService extends Service implements
         }
     }
 
-    public void setQueue(SongQueue songQueue) {
-        this.queue = songQueue;
+    public void setActivePlaylist(ArrayList<Song> playlist, int position) {
+        nowPlayingController.setActivePlaylist(playlist, position);
+        if(nowPlayingController.isShuffled()) {
+            nowPlayingController.toggleShuffle();
+        }
         playSong();
-    }
-
-    public void setSong(int idx) {
-        queue.setCurrentSong(idx);
     }
 
     public void prepareSong() {
         //get song
-        Song songPlaying = queue.getCurrentSong();
+        Song songPlaying = nowPlayingController.getAvailableSong();
+        Log.v("SONG READY", songPlaying.getTitle());
         //get id
         long currentSongId = songPlaying.getId();
         //set URI
@@ -219,10 +221,10 @@ public class MusicService extends Service implements
     }
 
     public boolean next() {
-        if(queue.nextSong()!=null)
+        if(nowPlayingController.getNextAvailableSong() != null)
             playSong();
         else {
-            queue.resetQueue();
+            nowPlayingController.resetActivePlaylist();
             player.reset();
             autoplay = false;
             prepareSong();
@@ -234,14 +236,14 @@ public class MusicService extends Service implements
 
     public boolean prev() {
         if(player.getCurrentPosition() > 3000) playSong();
-        else if(queue.prevSong()!=null)
+        else if(nowPlayingController.getPreviousAvailableSong() != null)
             playSong();
         else if(player.isPlaying()) {
             playSong();
             return false;
         } else {
             autoplay = false;
-            queue.resetQueue();
+            nowPlayingController.resetActivePlaylist();
             player.reset();
             prepareSong();
             player.prepareAsync();
@@ -250,33 +252,27 @@ public class MusicService extends Service implements
         return true;
     }
 
-    public boolean isShuffled() {return queue.isShuffled();}
-
-    public boolean shuffle() {
-        queue.toggleShuffle();
-        return queue.isShuffled();
+    public boolean isShuffled() {
+        return nowPlayingController.isShuffled();
     }
 
-    public int isRepeat() {
-        if(queue.isRepeatQueue()) {
-            return 1; //queue
-        } else if(queue.isRepeatSong()) {
-            return 2; //song
-        } else {
-            return 0;//none
-        }
+    public void toggleShuffle() {
+        nowPlayingController.toggleShuffle();
     }
 
-    public int repeat() {
-        queue.toggleRepeat();
-        return isRepeat();
+    public RepeatState getRepeatState() {
+        return nowPlayingController.getRepeatState();
+    }
+
+    public void toggleRepeatState() {
+        nowPlayingController.toggleRepeatState();
     }
 
     public Song getCurrentSong() {
-        return queue.getCurrentSong();
+        return nowPlayingController.getAvailableSong();
     }
 
     public boolean isQueueSet() {
-        return queue != null;
+        return nowPlayingController.isActivePlaylistSet();
     }
 }
