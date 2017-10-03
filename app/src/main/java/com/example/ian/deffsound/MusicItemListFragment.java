@@ -1,10 +1,14 @@
 package com.example.ian.deffsound;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +18,7 @@ import android.widget.ListView;
 
 import com.example.ian.deffsound.musiclist.MusicItem;
 import com.example.ian.deffsound.musiclist.MusicItemListAdaptor;
+import com.example.ian.deffsound.musiclist.SongItem;
 import com.example.ian.deffsound.songview.Song;
 
 import java.util.ArrayList;
@@ -22,6 +27,7 @@ public class MusicItemListFragment extends Fragment {
     private ArrayList<Song> playlist;
     private ArrayList<MusicItem> musicItemList;
     private ListView musicListView;
+    private MusicFragmentReceiver receiver;
     // private MusicDirectoryQueryHistory queryHistory;
 
     private OnFragmentInteractionListener mListener;
@@ -52,6 +58,7 @@ public class MusicItemListFragment extends Fragment {
 
         playlist = null;
         musicItemList = new ArrayList<>();
+        receiver = new MusicFragmentReceiver();
     }
 
     public static MusicItemListFragment newInstance() {
@@ -71,7 +78,24 @@ public class MusicItemListFragment extends Fragment {
                 musicItemPicked(view, i);
             }
         });
+        musicListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                addUpNext(i);
+                return true;
+            }
+        });
         return view;
+    }
+
+    private void addUpNext(int pos) {
+        if(musicItemList == null) return;
+        MusicItem item = musicItemList.get(pos);
+        if(item.isSong()) {
+            if (mListener != null) {
+                mListener.onFragmentInteraction("add_up_next", pos);
+            }
+        }
     }
 
 
@@ -97,6 +121,10 @@ public class MusicItemListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if(directoryType != null) {
+            IntentFilter filter =
+                    new IntentFilter("SONG_PREPARED");
+            LocalBroadcastManager.getInstance(getActivity()).registerReceiver(receiver, filter);
+
             MusicDirectoryQuery query = MusicDirectoryQueryHistory.getQuery();
             if(query == null) {
                 resetHistory();
@@ -184,6 +212,21 @@ public class MusicItemListFragment extends Fragment {
         //check if song and playlist set
         if(item.isSong()) {
             if (playlist != null) {
+                //check if song already playing
+                MainActivity act = (MainActivity) getActivity();
+                if (act.isMusicBound()) {
+                    MusicService srv = act.getMusicService();
+                    Song currentSong = srv.getCurrentSong();
+                    if (currentSong != null) {
+                        SongItem songItem = (SongItem) item;
+                        if (songItem.getTitle().equals(currentSong.getTitle()) &&
+                                songItem.getAlbum().equals(currentSong.getAlbum()) &&
+                                songItem.getArtist().equals(currentSong.getArtist())) {
+                            mListener.onFragmentInteraction("resume_song", pos);
+                            return;
+                        }
+                    }
+                }
                 if (mListener != null) {
                     mListener.onFragmentInteraction("start_new_playlist", pos);
                 }
@@ -199,5 +242,14 @@ public class MusicItemListFragment extends Fragment {
 
     public ArrayList<Song> getPlaylist() {
         return playlist;
+    }
+
+    //Receives notification of a prepared Song
+    private class MusicFragmentReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            displayDirectory();
+        }
     }
 }

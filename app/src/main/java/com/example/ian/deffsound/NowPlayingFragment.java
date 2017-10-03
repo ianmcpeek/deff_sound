@@ -18,12 +18,12 @@ import android.widget.TextView;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link NowPlayingWidget.OnFragmentInteractionListener} interface
+ * {@link NowPlayingFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link NowPlayingWidget#newInstance} factory method to
+ * Use the {@link NowPlayingFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class NowPlayingWidget extends Fragment {
+public class NowPlayingFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -43,11 +43,11 @@ public class NowPlayingWidget extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment NowPlayingWidget.
+     * @return A new instance of fragment NowPlayingFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static NowPlayingWidget newInstance(String param1, String param2) {
-        NowPlayingWidget fragment = new NowPlayingWidget();
+    public static NowPlayingFragment newInstance(String param1, String param2) {
+        NowPlayingFragment fragment = new NowPlayingFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -55,7 +55,7 @@ public class NowPlayingWidget extends Fragment {
         return fragment;
     }
 
-    public NowPlayingWidget() {
+    public NowPlayingFragment() {
         // Required empty public constructor
     }
 
@@ -73,7 +73,7 @@ public class NowPlayingWidget extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_now_playing_widget, container, false);
+        View v = inflater.inflate(R.layout.fragment_now_playing, container, false);
         ImageView expandBtn = (ImageView) v.findViewById(R.id.fragmentUpBtn);
         expandBtn.setOnClickListener(new View.OnClickListener() {
             @Override

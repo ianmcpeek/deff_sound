@@ -11,7 +11,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.ian.deffsound.MainActivity;
+import com.example.ian.deffsound.MusicService;
 import com.example.ian.deffsound.R;
+import com.example.ian.deffsound.songview.Song;
 
 import java.util.ArrayList;
 
@@ -21,10 +24,20 @@ import java.util.ArrayList;
 public class MusicItemListAdaptor extends BaseAdapter {
     private ArrayList<MusicItem> musicItemList;
     private LayoutInflater songInf;
+    private Song currentSong;
 
     public MusicItemListAdaptor(Context c, ArrayList<MusicItem> musicItemList) {
         this.musicItemList = musicItemList;
         songInf = LayoutInflater.from(c);
+
+        //check for current song
+        this.currentSong = null;
+        MainActivity act = (MainActivity) c;
+        if(act == null) return;
+        if(act.isMusicBound()) {
+            MusicService srv = act.getMusicService();
+            this.currentSong = srv.getCurrentSong();
+        }
     }
 
     @Override
@@ -97,12 +110,22 @@ public class MusicItemListAdaptor extends BaseAdapter {
     }
 
     private View getSongItemView(SongItem song, ViewGroup parent) {
-        //map to artist layout
+        //map to song layout
         LinearLayout songItemLay =
                 (LinearLayout)songInf.inflate(R.layout.song_item, parent, false);
         TextView titleView = (TextView) songItemLay.findViewById(R.id.song_title);
         TextView artistView = (TextView) songItemLay.findViewById(R.id.song_artist);
         TextView trackLengthView = (TextView) songItemLay.findViewById(R.id.song_length);
+
+        // check if view matches current song
+        if (currentSong != null &&
+                song.getTitle().equals(currentSong.getTitle()) &&
+                song.getAlbum().equals(currentSong.getAlbum()) &&
+                song.getArtist().equals(currentSong.getArtist())) {
+            titleView.setTextColor(parent.getResources().getColor(R.color.textColorDarkHighlighted));
+            artistView.setTextColor(parent.getResources().getColor(R.color.textColorDarkHighlighted));
+            trackLengthView.setTextColor(parent.getResources().getColor(R.color.textColorDarkHighlighted));
+        }
 
         titleView.setText(song.getTitle());
         artistView.setText(song.getArtist());

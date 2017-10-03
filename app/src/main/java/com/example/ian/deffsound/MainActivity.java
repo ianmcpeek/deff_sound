@@ -1,6 +1,7 @@
 package com.example.ian.deffsound;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -15,19 +16,20 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.ian.deffsound.songview.Song;
 
 import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity implements MusicItemListFragment.OnFragmentInteractionListener,
-    NowPlayingWidget.OnFragmentInteractionListener {
+    NowPlayingFragment.OnFragmentInteractionListener {
 
 //    private MusicService musicService;
 //    private Intent playIntent;
@@ -173,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements MusicItemListFrag
     }
 
     private void displayNowPlayingFragment() {
-        FrameLayout lay = (FrameLayout) findViewById(R.id.nowPlayingWidget);
+        FrameLayout lay = (FrameLayout) findViewById(R.id.nowPlayingFragment);
         if(lay.getVisibility() == View.VISIBLE) return;
         lay.setVisibility(View.VISIBLE);
 
@@ -217,12 +219,8 @@ public class MainActivity extends AppCompatActivity implements MusicItemListFrag
             }
         };
 
-    private void startNowPlaying(int songIndex) {
-        //start nowplaying activity
-        //TODO modify to check if already musicBound
+    private void startNowPlaying() {
         Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
-
-        musicService.setActivePlaylist(musicItemListFragments.get(viewPager.getCurrentItem()).getPlaylist(), songIndex);
         MainActivity.this.startActivity(intent);
     }
 
@@ -230,7 +228,6 @@ public class MainActivity extends AppCompatActivity implements MusicItemListFrag
     public void onFragmentInteraction(String data) {
         if(data.compareTo("expand") == 0) {
             Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
-            //bundle song picked into NowPlayingActivity
             MainActivity.this.startActivity(intent);
         } else if(data.compareTo("play song") == 0) {
             if(musicBound && !musicService.isPlaying()) musicService.play();
@@ -242,7 +239,26 @@ public class MainActivity extends AppCompatActivity implements MusicItemListFrag
     @Override
     public void onFragmentInteraction(String data, int pos) {
         if(data.compareTo("start_new_playlist") == 0) {
-            startNowPlaying(pos);
+            musicService.setActivePlaylist(musicItemListFragments.get(viewPager.getCurrentItem()).getPlaylist(), pos);
+            startNowPlaying();
+        } else if(data.compareTo("resume_song") == 0) {
+            startNowPlaying();
+        } else if(data.compareTo("add_up_next") == 0) {
+            if (musicBound) {
+                Song song = musicItemListFragments.get(viewPager.getCurrentItem()).getPlaylist().get(pos);
+                musicService.addUpNext(song);
+                //make toast
+                Context context = getApplicationContext();
+                CharSequence text = song.getTitle() + " added Up Next!";
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+
+                if(!musicService.isQueueSet()) {
+
+                }
+            }
         }
     }
 

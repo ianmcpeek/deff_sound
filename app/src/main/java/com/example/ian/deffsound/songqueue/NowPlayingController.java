@@ -13,6 +13,8 @@ import java.util.ArrayList;
 public class NowPlayingController {
     private SongPlaylist playlist;
     private SongPlaylist shuffledPlaylist;
+    private UpNextQueue upNextQueue;
+    private boolean isUpNextPlaying;
 
     private boolean isShuffled;
     private RepeatState repeatState;
@@ -20,6 +22,7 @@ public class NowPlayingController {
     public NowPlayingController() {
         this.playlist = new SongPlaylist();
         this.shuffledPlaylist = new SongPlaylist();
+        this.upNextQueue = new UpNextQueue();
         this.isShuffled = false;
         this.repeatState = RepeatState.OFF;
     }
@@ -73,12 +76,18 @@ public class NowPlayingController {
         }
     }
 
+    public void addToUpNext(Song song) {
+        this.upNextQueue.enqueue(song);
+    }
+
     public Song getPreviousAvailableSong() {
         switch (repeatState) {
             case OFF:
+                discardUpNext();
                 return getActivePlaylist().previousSong();
 
             case PLAYLIST:
+                discardUpNext();
                 Song prevSong = getActivePlaylist().previousSong();
                 if(prevSong == null) {
                     setActivePlaylistCurrentSong(getActivePlaylist().size() - 1);
@@ -92,13 +101,29 @@ public class NowPlayingController {
         return null;
     }
 
+    private void discardUpNext() {
+        if (isUpNextPlaying) {
+            upNextQueue.dequeue();
+            isUpNextPlaying = false;
+        }
+    }
+
     public Song getNextAvailableSong() {
+        Song nextSong;
         switch (repeatState) {
             case OFF:
+                nextSong = getUpNext();
+                if(nextSong != null) {
+                    return nextSong;
+                }
                 return getActivePlaylist().nextSong();
 
             case PLAYLIST:
-                Song nextSong = getActivePlaylist().nextSong();
+                nextSong = getUpNext();
+                if(nextSong != null) {
+                    return nextSong;
+                }
+                nextSong = getActivePlaylist().nextSong();
                 if(nextSong == null) {
                     setActivePlaylistCurrentSong(0);
                     nextSong = getAvailableSong();
@@ -111,7 +136,28 @@ public class NowPlayingController {
         return null;
     }
 
+    private Song getUpNext() {
+        if (isUpNextPlaying) {
+            upNextQueue.dequeue();
+            Song nextSong = upNextQueue.peek();
+            if(nextSong != null) {
+                return nextSong;
+            }
+            isUpNextPlaying = false;
+            return getActivePlaylist().getCurrentSong();
+        } else if (upNextQueue.peek() != null) {
+            isUpNextPlaying = true;
+            getActivePlaylist().nextSong();
+
+            return upNextQueue.peek();
+        }
+        return null;
+    }
+
     public Song getAvailableSong() {
+        if (isUpNextPlaying) {
+            return upNextQueue.peek();
+        }
         return getActivePlaylist().getCurrentSong();
     }
 
@@ -136,6 +182,10 @@ public class NowPlayingController {
         this.playlist.setCurrentSong(position);
         if (isShuffled) {
             setShuffledPlaylist();
+        }
+        if (isUpNextPlaying) {
+            upNextQueue.dequeue();
+            isUpNextPlaying = false;
         }
 
     }

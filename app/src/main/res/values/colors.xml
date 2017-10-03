@@ -22,4 +22,5 @@
     <color name="navigationBarColor">#000000</color>
     <color name="colorAccent">#c8e8ff</color>
     <color name="colorDisabled">#71AFE9</color>
+    <color name="textColorDarkHighlighted">#4CAF50</color>
 </resources>

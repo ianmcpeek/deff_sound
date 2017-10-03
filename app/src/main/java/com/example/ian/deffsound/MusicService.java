@@ -20,7 +20,6 @@ import com.example.ian.deffsound.songqueue.NowPlayingController;
 import com.example.ian.deffsound.songqueue.RepeatState;
 import com.example.ian.deffsound.songview.Song;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -39,9 +38,9 @@ public class MusicService extends Service implements
     private boolean autoplay = true;
 
 
-    private NoisyAudioReciever noisyAudioReciever;
+    private NoisyAudioReceiver noisyAudioReceiver;
 
-    private class NoisyAudioReciever extends BroadcastReceiver {
+    private class NoisyAudioReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -59,7 +58,7 @@ public class MusicService extends Service implements
                 public void onAudioFocusChange(int focusChange) {
                     if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
                         if(player.isPlaying()) {
-                            unregisterReceiver(noisyAudioReciever);
+                            unregisterReceiver(noisyAudioReceiver);
                         }
                         pausePlayer();
                     }
@@ -76,12 +75,11 @@ public class MusicService extends Service implements
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e("SERVICE", "Music Service has been created");
         nowPlayingController = new NowPlayingController();
         player = new MediaPlayer();
         initPlayer();
 
-        noisyAudioReciever = new NoisyAudioReciever();
+        noisyAudioReceiver = new NoisyAudioReceiver();
         audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
     }
 
@@ -127,7 +125,7 @@ public class MusicService extends Service implements
             autoplay = false;
             prepareSong();
             mp.prepareAsync();
-            unregisterReceiver(noisyAudioReciever);
+            unregisterReceiver(noisyAudioReceiver);
             audioManager.abandonAudioFocus(audioFocusChangeListener);
         }
     }
@@ -145,7 +143,7 @@ public class MusicService extends Service implements
         //start playback
 
         IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-        registerReceiver(noisyAudioReciever, intentFilter);
+        registerReceiver(noisyAudioReceiver, intentFilter);
         if(hasAudioFocus()) {
             if(autoplay) mp.start();
         }
@@ -153,9 +151,6 @@ public class MusicService extends Service implements
 
     public void setActivePlaylist(ArrayList<Song> playlist, int position) {
         nowPlayingController.setActivePlaylist(playlist, position);
-        if(nowPlayingController.isShuffled()) {
-            nowPlayingController.toggleShuffle();
-        }
         playSong();
     }
 
@@ -201,7 +196,7 @@ public class MusicService extends Service implements
 
     public void pausePlayer() {
         player.pause();
-        //unregisterReceiver(noisyAudioReciever);
+        //unregisterReceiver(noisyAudioReceiver);
         Intent completed = new Intent("SONG_PREPARED");
         LocalBroadcastManager.getInstance(this).sendBroadcast(completed);
     }
@@ -210,11 +205,15 @@ public class MusicService extends Service implements
         player.seekTo(pos);
     }
 
+    public void addUpNext(Song song) {
+        nowPlayingController.addToUpNext(song);
+    }
+
     public void play() {
         player.start();
         //need playlist over variable to reset on playlist end
         IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-        registerReceiver(noisyAudioReciever, intentFilter);
+        registerReceiver(noisyAudioReceiver, intentFilter);
         if(hasAudioFocus()) {
             player.start();
         }

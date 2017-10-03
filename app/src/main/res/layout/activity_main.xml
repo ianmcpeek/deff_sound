@@ -44,7 +44,7 @@ tools:context=".MainActivity">
 
     <fragment
         android:id="@+id/nowPlayingWidget"
-        android:name="com.example.ian.deffsound.NowPlayingWidget"
+        android:name="com.example.ian.deffsound.NowPlayingFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="90" />
