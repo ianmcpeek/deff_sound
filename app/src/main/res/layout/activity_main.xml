@@ -43,7 +43,7 @@ tools:context=".MainActivity">
     </android.support.design.widget.CoordinatorLayout>
 
     <fragment
-        android:id="@+id/nowPlayingWidget"
+        android:id="@+id/nowPlayingFragment"
         android:name="com.example.ian.deffsound.NowPlayingFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
