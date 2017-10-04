@@ -317,7 +317,6 @@ public class NowPlayingActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.v("PREPARED", "recieved prepared");
             setScreen();
             setPlayerControls();
             setSongProgressSeekbar();

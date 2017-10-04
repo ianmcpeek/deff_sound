@@ -33,10 +33,13 @@ public class MusicItemListAdaptor extends BaseAdapter {
         //check for current song
         this.currentSong = null;
         MainActivity act = (MainActivity) c;
-        if(act == null) return;
-        if(act.isMusicBound()) {
-            MusicService srv = act.getMusicService();
-            this.currentSong = srv.getCurrentSong();
+        if(act != null) {
+            if(act.isMusicBound()) {
+                MusicService srv = act.getMusicService();
+                if(srv != null) {
+                    this.currentSong = srv.getCurrentSong();
+                }
+            }
         }
     }
 
@@ -122,9 +125,9 @@ public class MusicItemListAdaptor extends BaseAdapter {
                 song.getTitle().equals(currentSong.getTitle()) &&
                 song.getAlbum().equals(currentSong.getAlbum()) &&
                 song.getArtist().equals(currentSong.getArtist())) {
-            titleView.setTextColor(parent.getResources().getColor(R.color.textColorDarkHighlighted));
-            artistView.setTextColor(parent.getResources().getColor(R.color.textColorDarkHighlighted));
-            trackLengthView.setTextColor(parent.getResources().getColor(R.color.textColorDarkHighlighted));
+            titleView.setTextColor(parent.getResources().getColor(R.color.colorPrimary));
+            artistView.setTextColor(parent.getResources().getColor(R.color.colorPrimary));
+            trackLengthView.setTextColor(parent.getResources().getColor(R.color.colorPrimary));
         }
 
         titleView.setText(song.getTitle());

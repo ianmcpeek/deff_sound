@@ -27,7 +27,6 @@ public class MusicItemListFragment extends Fragment {
     private ArrayList<Song> playlist;
     private ArrayList<MusicItem> musicItemList;
     private ListView musicListView;
-    private MusicFragmentReceiver receiver;
     // private MusicDirectoryQueryHistory queryHistory;
 
     private OnFragmentInteractionListener mListener;
@@ -58,7 +57,6 @@ public class MusicItemListFragment extends Fragment {
 
         playlist = null;
         musicItemList = new ArrayList<>();
-        receiver = new MusicFragmentReceiver();
     }
 
     public static MusicItemListFragment newInstance() {
@@ -121,9 +119,6 @@ public class MusicItemListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if(directoryType != null) {
-            IntentFilter filter =
-                    new IntentFilter("SONG_PREPARED");
-            LocalBroadcastManager.getInstance(getActivity()).registerReceiver(receiver, filter);
 
             MusicDirectoryQuery query = MusicDirectoryQueryHistory.getQuery();
             if(query == null) {
@@ -242,14 +237,5 @@ public class MusicItemListFragment extends Fragment {
 
     public ArrayList<Song> getPlaylist() {
         return playlist;
-    }
-
-    //Receives notification of a prepared Song
-    private class MusicFragmentReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            displayDirectory();
-        }
     }
 }
