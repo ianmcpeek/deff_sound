@@ -160,13 +160,13 @@ public class NowPlayingActivity extends AppCompatActivity {
 
         @Override
         public void onPlaybackStateChanged(PlaybackStateCompat playbackState) {
-            isPlaying = playbackState != null &&
-                    playbackState.getState() == PlaybackStateCompat.STATE_PLAYING;
-            setPlayButton();
-            position = playbackState.getPosition();
-            setProgressAnimation();
-            progressText.setText(timeFormat((int)position));
-
+            if(playbackState != null) {
+                isPlaying = playbackState.getState() == PlaybackStateCompat.STATE_PLAYING;
+                setPlayButton();
+                position = playbackState.getPosition();
+                setProgressAnimation();
+                progressText.setText(timeFormat((int)position));
+            }
         }
 
         private ValueAnimator progressAnimator;
