@@ -1,9 +1,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
-    tools:context="com.example.ian.deffsound.NowPlayingActivity">
+    tools:context="com.example.ian.supermix.NowPlayingActivity">
 
     <!-- Background -->
 
@@ -39,14 +40,15 @@
             android:layout_toLeftOf="@+id/queueBtn"
             android:layout_toRightOf="@+id/downBtn"
             android:layout_toStartOf="@+id/queueBtn"
+            android:breakStrategy="balanced"
             android:fontFamily="sans-serif-condensed"
             android:gravity="center"
             android:maxWidth="600dp"
             android:minWidth="600dp"
             android:text="Album Name"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/textColorPrimary"
-            android:textSize="14sp" />
+            android:textColor="@color/colorSecondaryLight"
+            android:textSize="16sp" />
 
         <ImageView
             android:id="@+id/queueBtn"
@@ -70,7 +72,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/topBarLayout"
-        android:src="@drawable/no_album_art" />
+        android:src="@drawable/ic_album_accent_24dp" />
 
     <!-- BottomBar -->
     <LinearLayout
@@ -101,12 +103,13 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
-                    android:fontFamily="sans-serif-condensed"
+                    android:ellipsize="marquee"
+                    android:singleLine="true"
                     android:text="Song Name"
                     android:textAlignment="center"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textColor="@color/textColorPrimary"
-                    android:textSize="18sp" />
+                    android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                    android:textColor="@color/colorSecondaryLight"
+                    android:textSize="20sp" />
 
                 <TextView
                     android:id="@+id/artistTxt"
@@ -116,11 +119,13 @@
                     android:layout_marginBottom="5dp"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
+                    android:ellipsize="marquee"
                     android:fontFamily="sans-serif-condensed"
+                    android:singleLine="true"
                     android:text="Artist Name"
                     android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@color/textColorSecondary"
-                    android:textSize="14sp" />
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="16sp" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -137,13 +142,16 @@
                 android:layout_marginLeft="10dp"
                 android:text="prog"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/textColorSecondary" />
+                android:textColor="@color/colorSecondaryLight" />
 
-            <SeekBar
+            <com.example.ian.supermix.AudioSeekBar
                 android:id="@+id/seekBar"
                 android:layout_width="213dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1.01" />
+                android:layout_weight="1.01"
+                android:progressBackgroundTint="@color/colorPrimaryDark"
+                android:progressTint="@color/colorSecondaryLight"
+                android:thumbTint="@color/colorSecondaryLight" />
 
             <TextView
                 android:id="@+id/trackEndTxt"
@@ -152,7 +160,7 @@
                 android:layout_marginRight="10dp"
                 android:text="end"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/textColorSecondary" />
+                android:textColor="@color/colorSecondaryLight" />
         </LinearLayout>
 
         <RelativeLayout
@@ -168,7 +176,6 @@
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:onClick="shuffleSongs"
                 android:src="@drawable/ic_shuffle_disabled_24dp" />
 
             <ImageView
@@ -190,7 +197,6 @@
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
                 android:layout_gravity="center"
-                android:onClick="playSong"
                 android:src="@drawable/ic_pause_accent_24dp" />
 
             <ImageView
@@ -212,7 +218,6 @@
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:layout_marginRight="10dp"
-                android:onClick="repeatSongs"
                 android:src="@drawable/ic_autorenew_disabled_24dp" />
         </RelativeLayout>
     </LinearLayout>

@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="10dp"
     android:orientation="vertical">
 
     <TextView
@@ -12,10 +11,8 @@
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="10dp"
-        android:fontFamily="sans-serif-condensed"
-        android:textColor="@color/abc_search_url_text_selected"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/artist_n_albums"
@@ -24,8 +21,8 @@
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
-        android:fontFamily="sans-serif-condensed"
-        android:textColor="@color/button_material_dark"
-        android:textSize="14sp" />
+        android:fontFamily="sans-serif"
+        android:textColor="@color/textColorListSecondary"
+        android:textSize="16sp" />
 
 </LinearLayout>
