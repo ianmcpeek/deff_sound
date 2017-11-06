@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Colors from http://www.colourlovers.com/palette/4321073/neil_is_young-->
-    <color name="Random">#DADAC9</color>
-    <color name="Blind">#3C2D39</color>
-    <color name="Prince">#6D374B</color>
-    <color name="PorkChop">#A85A42</color>
-    <color name="AfterDarkTG">#423009</color>
-
     <!-- Colors from http://www.colourlovers.com/palette/1804326/sea_calling-->
-    <color name="Water">#086EB6</color>
-    <color name="Wave">#048FEA</color>
-    <color name="SkyHi">#63beed</color>
-    <color name="D4EEFB">#d4eefb</color>
-    <color name="BecauseYoureMine">#E9D3AA</color>
 
-    <color name="colorPrimary">#1976d2</color>
-    <color name="colorPrimaryDark">#125688</color>
+
+    <color name="colorPrimary">#f9a825</color>
+    <color name="colorPrimaryLight">#ffd95a</color>
+    <color name="colorPrimaryDark">#c17900</color>
+
+    <color name="colorSecondary">#fff8e1</color>
+    <color name="colorSecondaryLight">#ffffff</color>
+    <color name="colorSecondaryDark">#ccc5af</color>
+
     <color name="textColorPrimary">#ffffff</color>
     <color name="textColorSecondary">#cfd8dc</color>
-    <color name="windowBackground">#FFFFFF</color>
+    <color name="windowBackground">#ffffff</color>
     <color name="navigationBarColor">#000000</color>
     <color name="colorAccent">#c8e8ff</color>
     <color name="colorDisabled">#71AFE9</color>
     <color name="textColorDarkHighlighted">#4CAF50</color>
+
+    <color name="textColorListPrimary">#3a2636</color>
+    <color name="textColorListSecondary">#616161</color>
+    <color name="textColorListHighlightedPrimary">#1976d2</color>
+    <color name="textColorListHighlightedSecondary">#71AFE9</color>
 </resources>

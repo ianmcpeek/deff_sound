@@ -6,7 +6,7 @@
     android:background="@color/colorPrimary"
     android:clickable="false"
     android:visibility="gone"
-    tools:context="com.example.ian.deffsound.NowPlayingFragment">
+    tools:context="com.example.ian.supermix.NowPlayingFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,23 +36,28 @@
                 android:id="@+id/fragSongTxt"
                 android:layout_width="250dp"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-condensed"
+                android:ellipsize="marquee"
+                android:fontFamily="sans-serif"
                 android:gravity="center_horizontal"
+                android:singleLine="true"
                 android:text="Song Name"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textColor="@color/textColorPrimary"
-                android:textSize="18sp" />
+                android:textColor="@color/colorSecondaryLight"
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/fragArtistTxt"
                 android:layout_width="250dp"
                 android:layout_height="wrap_content"
+                android:autoText="false"
+                android:ellipsize="marquee"
                 android:fontFamily="sans-serif-condensed"
                 android:gravity="center_horizontal"
+                android:singleLine="true"
                 android:text="Artist Name - Album Name"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@color/textColorSecondary"
-                android:textSize="14sp" />
+                android:textColor="@color/colorPrimaryDark"
+                android:textSize="16sp" />
         </LinearLayout>
 
         <ImageView
